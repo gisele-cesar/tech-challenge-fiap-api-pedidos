@@ -83,61 +83,87 @@ namespace fiap.Repositories
         {
             try
             {
-                using var connection = _connectionFactory();
-                connection.Open();
-                _logger.Information("Conexão com o banco de dados realizada com sucesso!");
+                string tableName = "fiap-pedido";
+                string gsiName = "StatusPedido-index";
+                var statusList = new[] { status1, status2, status3 };
+                var pedidos = new List<Pedido>();
 
-                var lst = new List<Pedido>();
-                using var command = connection.CreateCommand();
-                command.CommandText = $@"
-                                  SELECT p.*, sp.Descricao AS DescricaoStatusPedido, pg.Descricao AS DescricaoStatusPagamento 
-                                    FROM Pedido p 
-                                    JOIN StatusPedido sp ON p.IdStatusPedido = sp.IdStatusPedido
-                                    JOIN StatusPagamento pg ON p.IdStatusPagamento = pg.IdStatusPagamento
-                                    WHERE sp.Descricao NOT IN ('Solicitado', 'Finalizado')
-                                    ORDER BY 
-                                        CASE 
-                                            WHEN sp.Descricao = '{status1}' THEN 1
-                                            WHEN sp.Descricao = '{status2}' THEN 2
-                                            WHEN sp.Descricao = '{status3}' THEN 3
-                                            ELSE 4
-                                        END,
-                                        p.DataCriacao ASC";
-
-                using var reader = command.ExecuteReader();
-                while (reader.Read())
+                foreach (var status in statusList)
                 {
-                    var idPedido = (int)reader["IdPedido"];
-                    lst.Add(new Pedido
+                    var queryRequest = new QueryRequest
                     {
-                        IdPedido = idPedido,
-                        IdCliente = (int)reader["IdCliente"],
-                        Numero = reader["NumeroPedido"].ToString(),
-                        StatusPedido = new StatusPedido
+                        TableName = tableName,
+                        IndexName = gsiName,
+                        KeyConditionExpression = "StatusPedido = :status",
+                        ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                         {
-                            IdStatusPedido = (int)reader["IdStatusPedido"],
-                            Descricao = reader["DescricaoStatusPedido"].ToString()
-                        },
-                        StatusPagamento = new StatusPagamento
+                            { ":status", new AttributeValue { S = status } }
+                        }
+                    };
+
+                    var response = await _amazonDynamoDb.QueryAsync(queryRequest);
+
+                    foreach (var item in response.Items)
+                    {
+                        // Exclude "Solicitado" and "Finalizado"
+                        if (item["StatusPedido"].S == "Solicitado" || item["StatusPedido"].S == "Finalizado")
+                            continue;
+
+                        // Map Cliente
+                        var clienteMap = item.ContainsKey("Cliente") ? item["Cliente"].M : null;
+                        var cliente = clienteMap != null
+                            ? new Cliente
+                            {
+                                Id = int.Parse(clienteMap["IdCliente"].N),
+                                Nome = clienteMap["Nome"].S,
+                                Email = clienteMap["Email"].S,
+                                Cpf = clienteMap["Cpf"].S
+                            }
+                            : null;
+
+                        // Map Produtos (list)
+                        var produtos = new List<Produto>();
+                        if (item.ContainsKey("Produtos") && item["Produtos"].L != null)
                         {
-                            IdStatusPagamento = (int)reader["IdStatusPagamento"],
-                            Descricao = reader["DescricaoStatusPagamento"].ToString()
-                        },
-                        Produtos = await _itemPedidoRepository.ObterItemPedido(idPedido)
-                    });
+                            foreach (var prodAttr in item["Produtos"].L)
+                            {
+                                var prodMap = prodAttr.M;
+                                produtos.Add(new Produto
+                                {
+                                    IdProduto = int.Parse(prodMap["IdProduto"].N),
+                                    Nome = prodMap["Nome"].S,
+                                    Preco = decimal.Parse(prodMap["Preco"].N)
+                                });
+                            }
+                        }
+
+                        pedidos.Add(new Pedido
+                        {
+                            IdPedido = item["IdPedido"].S,
+                            Cliente = cliente,
+                            Numero = item["NumeroPedido"].S,
+                            StatusPedido = Enum.Parse<StatusPedido>(item["StatusPedido"].S),
+                            StatusPagamento = Enum.Parse<StatusPagamento>(item["StatusPagamento"].S),
+                            Produtos = produtos
+                        });
+                    }
                 }
 
+                // Fix: Replace 'item' with 'p' in the ordering logic
+                pedidos = pedidos
+                    .OrderBy(p => Array.IndexOf(statusList, p.StatusPedido.ToString()))
+                    .ThenBy(p => DateTime.Parse(p.DataCriacao))
+                    .ToList();
+
                 _logger.Information("Lista de pedidos ordenada por status com sucesso!");
-                return await Task.FromResult(lst);
+                return pedidos;
             }
             catch (Exception ex)
             {
                 _logger.Error($"Erro ao obter pedidos por status. Erro: {ex.Message}.");
                 throw;
             }
-
         }
-
         public async Task<Pedido> ObterPedido(int idPedido)
         {
             try
@@ -233,7 +259,7 @@ namespace fiap.Repositories
                 }
             };
 
-             _amazonDynamoDb.PutItemAsync(request).Wait();
+            _amazonDynamoDb.PutItemAsync(request).Wait();
 
             return Task.FromResult(pedido);
         }
