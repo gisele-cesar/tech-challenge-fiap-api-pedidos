@@ -1,12 +1,9 @@
 ﻿using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using Amazon.Runtime.Internal.Transform;
 using fiap.Domain.Entities;
 using fiap.Domain.Interfaces;
 using Serilog;
-using Serilog.Core;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Text;
 
@@ -18,6 +15,7 @@ namespace fiap.Repositories
         private readonly Func<IDbConnection> _connectionFactory;
         private readonly IItemPedidoRepository _itemPedidoRepository;
         private readonly IAmazonDynamoDB _amazonDynamoDb;
+        private const string FIAP_PEDIDO_DYNAMODB = "fiap-pedido";
 
         public PedidoRepository(ILogger logger, Func<IDbConnection> connectionFactory, IItemPedidoRepository itemPedidoRepository, IAmazonDynamoDB amazonDynamoDb)
         {
@@ -29,38 +27,44 @@ namespace fiap.Repositories
 
         public async Task<List<Pedido>> ObterPedidos()
         {
+            var lst = new List<Pedido>();
             try
             {
-                using var connection = _connectionFactory();
-                connection.Open();
-                _logger.Information("Conexão com o banco de dados realizada com sucesso!");
-
-                var lst = new List<Pedido>();
-                using var command = connection.CreateCommand();
-                command.CommandText = @"
-                                SELECT p.*, sp.Descricao AS DescricaoStatusPedido, pg.Descricao AS DescricaoStatusPagamento 
-                                FROM Pedido p 
-                                JOIN StatusPedido sp ON p.IdStatusPedido = sp.IdStatusPedido
-                                JOIN StatusPagamento pg ON p.IdStatusPagamento = pg.IdStatusPagamento";
-                using var reader = command.ExecuteReader();
-                while (reader.Read())
+                var queryRequest = new QueryRequest
                 {
+                    TableName = FIAP_PEDIDO_DYNAMODB
+                };
+                var queryResponse = await _amazonDynamoDb.QueryAsync(queryRequest);
+
+                foreach (var item in queryResponse.Items)
+                {
+                    var produtos = new List<Produto>();
+                    if (item.TryGetValue("Produtos", out AttributeValue value) && value.L != null)
+                    {
+                        foreach (var prodAttr in value.L)
+                        {
+                            var prodMap = prodAttr.M;
+                            produtos.Add(new Produto
+                            {
+                                IdProduto = int.Parse(prodMap["IdProduto"].N),
+                                Nome = prodMap["Nome"].S,
+                                Preco = decimal.Parse(prodMap["Preco"].N)
+                            });
+                        }
+                    }
+
                     lst.Add(new Pedido
                     {
-                        IdPedido = (int)reader["IdPedido"],
-                        IdCliente = (int)reader["IdCliente"],
-                        Numero = reader["NumeroPedido"].ToString(),
-                        StatusPedido = new StatusPedido
-                        {
-                            IdStatusPedido = (int)reader["IdStatusPedido"],
-                            Descricao = reader["DescricaoStatusPedido"].ToString()
+                        IdPedido = item["IdPedido"].ToString(),
+                        Cliente = new Cliente{  Cpf = item["cliente.Cpf"].ToString(),
+                         Email = item["cliente.Email"].ToString(),
+                         Id = Convert.ToInt32(item["cliente.Id"]),
+                         Nome = item["cliente.Nome"].ToString()
                         },
-                        StatusPagamento = new StatusPagamento
-                        {
-                            IdStatusPagamento = (int)reader["IdStatusPagamento"],
-                            Descricao = reader["DescricaoStatusPagamento"].ToString()
-                        },
-                        Produtos = await _itemPedidoRepository.ObterItemPedido((int)reader["IdPedido"])
+                        Numero = item["NumeroPedido"].ToString(),
+                        StatusPedido = Enum.Parse<StatusPedido>(item["StatusPedido"].S),
+                        StatusPagamento = Enum.Parse<StatusPagamento>(item["StatusPagamento"].S),
+                        Produtos = produtos,
                     });
                 }
 
