@@ -6,4 +6,11 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" Version="4.0.0.5" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.0.6" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.0.4" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.0.4" />
+  </ItemGroup>
+
 </Project>
