@@ -1,0 +1,211 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D57CF421-1469-413C-AC01-DA26687B7318}|Solution Items{D57CF421-1469-413C-AC01-DA26687B7318}|C:\\Projetos\\tech-challenge-fiap-api-pedidos\\.github\\workflows\\deploy.yaml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{D57CF421-1469-413C-AC01-DA26687B7318}|Solution Items{D57CF421-1469-413C-AC01-DA26687B7318}|solutionrelative:.github\\workflows\\deploy.yaml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E440EC9A-D0BF-4BE2-869F-1596435B1E59}|src\\Infrastructure\\Data\\fiap.Repositories\\fiap.Repositories.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\infrastructure\\data\\fiap.repositories\\pedidorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E440EC9A-D0BF-4BE2-869F-1596435B1E59}|src\\Infrastructure\\Data\\fiap.Repositories\\fiap.Repositories.csproj|solutionrelative:src\\infrastructure\\data\\fiap.repositories\\pedidorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\tests\\fiap.tests\\repositories\\pedidorepositorytests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|solutionrelative:src\\tests\\fiap.tests\\repositories\\pedidorepositorytests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F1704FCE-9A1C-47EA-A60F-BD020CDCEABA}|src\\Core\\fiap.Domain\\fiap.Domain.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\core\\fiap.domain\\entities\\statuspedido.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F1704FCE-9A1C-47EA-A60F-BD020CDCEABA}|src\\Core\\fiap.Domain\\fiap.Domain.csproj|solutionrelative:src\\core\\fiap.domain\\entities\\statuspedido.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F1704FCE-9A1C-47EA-A60F-BD020CDCEABA}|src\\Core\\fiap.Domain\\fiap.Domain.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\core\\fiap.domain\\entities\\statuspagamento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F1704FCE-9A1C-47EA-A60F-BD020CDCEABA}|src\\Core\\fiap.Domain\\fiap.Domain.csproj|solutionrelative:src\\core\\fiap.domain\\entities\\statuspagamento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\tests\\fiap.tests\\application\\pedidoapplicationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|solutionrelative:src\\tests\\fiap.tests\\application\\pedidoapplicationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785BC85-CF30-4C13-824E-42AE32114EEC}|src\\Presentation\\fiap.API\\fiap.API.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\presentation\\fiap.api\\controllers\\pedidocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E785BC85-CF30-4C13-824E-42AE32114EEC}|src\\Presentation\\fiap.API\\fiap.API.csproj|solutionrelative:src\\presentation\\fiap.api\\controllers\\pedidocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785BC85-CF30-4C13-824E-42AE32114EEC}|src\\Presentation\\fiap.API\\fiap.API.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\presentation\\fiap.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E785BC85-CF30-4C13-824E-42AE32114EEC}|src\\Presentation\\fiap.API\\fiap.API.csproj|solutionrelative:src\\presentation\\fiap.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E440EC9A-D0BF-4BE2-869F-1596435B1E59}|src\\Infrastructure\\Data\\fiap.Repositories\\fiap.Repositories.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\infrastructure\\data\\fiap.repositories\\repositoriesmoduledependency.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E440EC9A-D0BF-4BE2-869F-1596435B1E59}|src\\Infrastructure\\Data\\fiap.Repositories\\fiap.Repositories.csproj|solutionrelative:src\\infrastructure\\data\\fiap.repositories\\repositoriesmoduledependency.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\tests\\fiap.tests\\service\\secretmanagerservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|solutionrelative:src\\tests\\fiap.tests\\service\\secretmanagerservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|c:\\projetos\\tech-challenge-fiap-api-pedidos\\src\\tests\\fiap.tests\\controllertests\\controllerpedidotests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}|src\\Tests\\fiap.Tests\\fiap.Tests.csproj|solutionrelative:src\\tests\\fiap.tests\\controllertests\\controllerpedidotests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0174dea2-fdbe-4ef1-8f99-c0beae78880f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "deploy.yaml",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\.github\\workflows\\deploy.yaml",
+              "RelativeDocumentMoniker": ".github\\workflows\\deploy.yaml",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\.github\\workflows\\deploy.yaml",
+              "RelativeToolTip": ".github\\workflows\\deploy.yaml",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAFcAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
+              "WhenOpened": "2025-05-18T20:51:06.489Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StatusPedido.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Core\\fiap.Domain\\Entities\\StatusPedido.cs",
+              "RelativeDocumentMoniker": "src\\Core\\fiap.Domain\\Entities\\StatusPedido.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Core\\fiap.Domain\\Entities\\StatusPedido.cs",
+              "RelativeToolTip": "src\\Core\\fiap.Domain\\Entities\\StatusPedido.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T20:34:16.312Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "StatusPagamento.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Core\\fiap.Domain\\Entities\\StatusPagamento.cs",
+              "RelativeDocumentMoniker": "src\\Core\\fiap.Domain\\Entities\\StatusPagamento.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Core\\fiap.Domain\\Entities\\StatusPagamento.cs",
+              "RelativeToolTip": "src\\Core\\fiap.Domain\\Entities\\StatusPagamento.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T20:17:23.115Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Presentation\\fiap.API\\Program.cs",
+              "RelativeDocumentMoniker": "src\\Presentation\\fiap.API\\Program.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Presentation\\fiap.API\\Program.cs",
+              "RelativeToolTip": "src\\Presentation\\fiap.API\\Program.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAowB0AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T04:19:38.826Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PedidoRepository.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Infrastructure\\Data\\fiap.Repositories\\PedidoRepository.cs",
+              "RelativeDocumentMoniker": "src\\Infrastructure\\Data\\fiap.Repositories\\PedidoRepository.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Infrastructure\\Data\\fiap.Repositories\\PedidoRepository.cs",
+              "RelativeToolTip": "src\\Infrastructure\\Data\\fiap.Repositories\\PedidoRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKAAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T03:36:52.852Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PedidoRepositoryTests.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\Repositories\\PedidoRepositoryTests.cs",
+              "RelativeDocumentMoniker": "src\\Tests\\fiap.Tests\\Repositories\\PedidoRepositoryTests.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\Repositories\\PedidoRepositoryTests.cs",
+              "RelativeToolTip": "src\\Tests\\fiap.Tests\\Repositories\\PedidoRepositoryTests.cs",
+              "ViewState": "AgIAAOQAAAAAAAAAAAAowPsAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T03:26:20.837Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SecretManagerServiceTests.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\Service\\SecretManagerServiceTests.cs",
+              "RelativeDocumentMoniker": "src\\Tests\\fiap.Tests\\Service\\SecretManagerServiceTests.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\Service\\SecretManagerServiceTests.cs",
+              "RelativeToolTip": "src\\Tests\\fiap.Tests\\Service\\SecretManagerServiceTests.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAhwC8AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T03:33:07.655Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PedidoApplicationTests.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\Application\\PedidoApplicationTests.cs",
+              "RelativeDocumentMoniker": "src\\Tests\\fiap.Tests\\Application\\PedidoApplicationTests.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\Application\\PedidoApplicationTests.cs",
+              "RelativeToolTip": "src\\Tests\\fiap.Tests\\Application\\PedidoApplicationTests.cs",
+              "ViewState": "AgIAAJQAAAAAAAAAAAAiwL0AAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T03:25:01.584Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "RepositoriesModuleDependency.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Infrastructure\\Data\\fiap.Repositories\\RepositoriesModuleDependency.cs",
+              "RelativeDocumentMoniker": "src\\Infrastructure\\Data\\fiap.Repositories\\RepositoriesModuleDependency.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Infrastructure\\Data\\fiap.Repositories\\RepositoriesModuleDependency.cs",
+              "RelativeToolTip": "src\\Infrastructure\\Data\\fiap.Repositories\\RepositoriesModuleDependency.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T04:20:42.581Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PedidoController.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Presentation\\fiap.API\\Controllers\\PedidoController.cs",
+              "RelativeDocumentMoniker": "src\\Presentation\\fiap.API\\Controllers\\PedidoController.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Presentation\\fiap.API\\Controllers\\PedidoController.cs",
+              "RelativeToolTip": "src\\Presentation\\fiap.API\\Controllers\\PedidoController.cs",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAIwI8AAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T04:37:37.63Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ControllerPedidoTests.cs",
+              "DocumentMoniker": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\ControllerTests\\ControllerPedidoTests.cs",
+              "RelativeDocumentMoniker": "src\\Tests\\fiap.Tests\\ControllerTests\\ControllerPedidoTests.cs",
+              "ToolTip": "C:\\Projetos\\tech-challenge-fiap-api-pedidos\\src\\Tests\\fiap.Tests\\ControllerTests\\ControllerPedidoTests.cs",
+              "RelativeToolTip": "src\\Tests\\fiap.Tests\\ControllerTests\\ControllerPedidoTests.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABIAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T03:21:27.74Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
