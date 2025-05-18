@@ -4,8 +4,6 @@ using fiap.Domain.Entities;
 using fiap.Domain.Interfaces;
 using Serilog;
 using System.Data;
-using System.Data.SqlClient;
-using System.Text;
 
 namespace fiap.Repositories
 {
