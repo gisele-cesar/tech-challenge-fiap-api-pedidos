@@ -137,10 +137,12 @@ namespace fiap.API.Controllers
                 var lstProdutos = new List<Produto>();
 
                 foreach (var item in pedido.Produtos)
-                    lstProdutos.Add(new Produto { IdProduto = item.IdProduto });
+                    lstProdutos.Add(new Produto { IdProduto = item.IdProduto , Preco =  item.Preco , Nome = item.Nome, Descricao = item.Descricao,
+                     IdCategoriaProduto = item.IdCategoriaProduto});
 
                 var obj = new Pedido
                 {
+                    IdPedido = Guid.NewGuid().ToString(),
                     Cliente = pedido.Cliente,
                     Numero = pedido.NumeroPedido,
                     Produtos = lstProdutos,

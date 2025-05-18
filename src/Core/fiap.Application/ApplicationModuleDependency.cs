@@ -8,7 +8,7 @@ namespace fiap.Application
     {
         public static void AddApplicationModule(this IServiceCollection services)
         {
-            services.AddTransient<IPedidoApplication, PedidoApplication>();
+            services.AddScoped<IPedidoApplication, PedidoApplication>();
         }
     }
 }

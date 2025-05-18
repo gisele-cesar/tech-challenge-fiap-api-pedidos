@@ -1,4 +1,5 @@
-﻿using fiap.Domain.Interfaces;
+﻿using Amazon.DynamoDBv2;
+using fiap.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace fiap.Repositories
@@ -7,7 +8,8 @@ namespace fiap.Repositories
     {
         public static void AddRepositoriesModule(this IServiceCollection services)
         {
-            services.AddSingleton<IPedidoRepository, PedidoRepository>();
+            services.AddAWSService<IAmazonDynamoDB>();
+            services.AddScoped<IPedidoRepository, PedidoRepository>();
         }
     }
 }

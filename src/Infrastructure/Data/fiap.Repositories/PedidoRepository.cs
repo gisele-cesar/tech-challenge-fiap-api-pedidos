@@ -24,11 +24,11 @@ namespace fiap.Repositories
             var lst = new List<Pedido>();
             try
             {
-                var queryRequest = new QueryRequest
+                var scanRequest = new ScanRequest
                 {
                     TableName = FIAP_PEDIDO_DYNAMODB
                 };
-                var queryResponse = await _amazonDynamoDb.QueryAsync(queryRequest);
+                var queryResponse = await _amazonDynamoDb.ScanAsync(scanRequest);
 
                 foreach (var item in queryResponse.Items)
                 {
@@ -47,17 +47,24 @@ namespace fiap.Repositories
                         }
                     }
 
+                    // Map Cliente
+                    var clienteMap = item.ContainsKey("Cliente") ? item["Cliente"].M : null;
+                    var cliente = clienteMap != null
+                        ? new Cliente
+                        {
+                            Id = int.Parse(clienteMap["IdCliente"].N),
+                            Nome = clienteMap["Nome"].S,
+                            Email = clienteMap["Email"].S,
+                            Cpf = clienteMap["Cpf"].S
+                        }
+                        : null;
+
+
                     lst.Add(new Pedido
                     {
-                        IdPedido = item["IdPedido"].ToString(),
-                        Cliente = new Cliente
-                        {
-                            Cpf = item["cliente.Cpf"].ToString(),
-                            Email = item["cliente.Email"].ToString(),
-                            Id = Convert.ToInt32(item["cliente.Id"]),
-                            Nome = item["cliente.Nome"].ToString()
-                        },
-                        Numero = item["NumeroPedido"].ToString(),
+                        IdPedido = item["IdPedido"].S,
+                        Cliente = cliente,
+                        Numero = item["NumeroPedido"].S,
                         StatusPedido = Enum.Parse<StatusPedido>(item["StatusPedido"].S),
                         StatusPagamento = Enum.Parse<StatusPagamento>(item["StatusPagamento"].S),
                         Produtos = produtos,
