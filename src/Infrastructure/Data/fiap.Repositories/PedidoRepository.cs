@@ -10,16 +10,12 @@ namespace fiap.Repositories
     public class PedidoRepository : IPedidoRepository
     {
         private readonly ILogger _logger;
-        private readonly Func<IDbConnection> _connectionFactory;
-        private readonly IItemPedidoRepository _itemPedidoRepository;
         private readonly IAmazonDynamoDB _amazonDynamoDb;
         private const string FIAP_PEDIDO_DYNAMODB = "fiap-pedido";
 
-        public PedidoRepository(ILogger logger, Func<IDbConnection> connectionFactory, IItemPedidoRepository itemPedidoRepository, IAmazonDynamoDB amazonDynamoDb)
+        public PedidoRepository(ILogger logger, Func<IDbConnection> connectionFactory, IAmazonDynamoDB amazonDynamoDb)
         {
             _logger = logger;
-            _connectionFactory = connectionFactory;
-            _itemPedidoRepository = itemPedidoRepository;
             _amazonDynamoDb = amazonDynamoDb;
         }
 
