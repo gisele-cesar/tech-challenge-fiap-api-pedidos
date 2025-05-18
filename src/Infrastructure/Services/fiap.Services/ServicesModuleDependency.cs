@@ -11,7 +11,6 @@ namespace fiap.Services
         {
             services.AddSingleton<IAmazonSecretsManager>(new AmazonSecretsManagerClient(RegionEndpoint.GetBySystemName("us-east-1")));
             services.AddSingleton<ISecretManagerService, SecretManagerService>();
-            services.AddSingleton<IPagamentoExternoService, PagamentoExternoService>();
         }
     }
 }

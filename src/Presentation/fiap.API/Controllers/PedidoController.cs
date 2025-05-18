@@ -12,12 +12,10 @@ namespace fiap.API.Controllers
     {
         private readonly Serilog.ILogger _logger;
         private readonly IPedidoApplication _pedidoApplication;
-        private readonly IPagamentoApplication _pagamentoApplication;
-        public PedidoController(Serilog.ILogger logger, IPedidoApplication pedidoApplication, IPagamentoApplication pagamentoApplication)
+        public PedidoController(Serilog.ILogger logger, IPedidoApplication pedidoApplication)
         {
             _logger = logger;
             _pedidoApplication = pedidoApplication;
-            _pagamentoApplication = pagamentoApplication;
         }
 
         /// <summary>
@@ -138,16 +136,16 @@ namespace fiap.API.Controllers
             {
                 var lstProdutos = new List<Produto>();
 
-                foreach (var item in pedido.ListaCodigoProduto)
-                    lstProdutos.Add(new Produto { IdProduto = item });
+                foreach (var item in pedido.Produtos)
+                    lstProdutos.Add(new Produto { IdProduto = item.IdProduto });
 
                 var obj = new Pedido
                 {
-                    IdCliente = pedido.IdCliente,
+                    Cliente = pedido.Cliente,
                     Numero = pedido.NumeroPedido,
                     Produtos = lstProdutos,
-                    StatusPedido = new StatusPedido { IdStatusPedido = 1 }, // substituir por enum
-                    StatusPagamento = new StatusPagamento { IdStatusPagamento = 1 }
+                    StatusPedido = StatusPedido.Solicitado,
+                    StatusPagamento = StatusPagamento.Pendente
                 };
 
                 _logger.Information($"Inserindo novo pedido numero: {pedido.NumeroPedido}");
@@ -155,12 +153,12 @@ namespace fiap.API.Controllers
 
                 if (pedidoInserido != null)
                 {
-                    if (await _pagamentoApplication.CriarOrdemPagamento(pedidoInserido.IdPedido))
-                    {
-                        _logger.Information($"Iniciando criacao ordem de pagamento no MP do pedido id: {pedidoInserido.IdPedido}.");
+                    //if (await _pagamentoApplication.CriarOrdemPagamento(pedidoInserido.IdPedido))
+                    //{
+                    //    _logger.Information($"Iniciando criacao ordem de pagamento no MP do pedido id: {pedidoInserido.IdPedido}.");
                         return Ok(new { Mensagem = $"Pedido incluído com sucesso!", pedidoInserido.IdPedido });
-                    }
-                    return BadRequest(new { Mensagem = "Erro ao criar pedido no meio de pagamento" });
+                    //}
+                    ///return BadRequest(new { Mensagem = "Erro ao criar pedido no meio de pagamento" });
                 }
                 return BadRequest(new { Mensagem = "Erro ao incluir pedido!" });
             }
@@ -221,13 +219,13 @@ namespace fiap.API.Controllers
             {
                 var lstProdutos = new List<Produto>();
 
-                foreach (var item in pedido.ListaCodigoProduto)
-                    lstProdutos.Add(new Produto { IdProduto = item });
+                foreach (var item in pedido.Produtos)
+                    lstProdutos.Add(new Produto { IdProduto = item.IdProduto });
                 var obj = new Pedido
                 {
                     IdPedido = pedido.IdPedido,
-                    StatusPedido = new StatusPedido { IdStatusPedido = pedido.IdStatusPedido },
-                    StatusPagamento = new StatusPagamento { IdStatusPagamento = pedido.IdStatusPagamento },
+                    StatusPedido = pedido.StatusPedido ,
+                    StatusPagamento = pedido.StatusPagamento,
                     Produtos = lstProdutos
                 };
 

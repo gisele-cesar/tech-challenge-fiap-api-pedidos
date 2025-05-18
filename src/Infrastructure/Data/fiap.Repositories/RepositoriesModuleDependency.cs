@@ -8,7 +8,6 @@ namespace fiap.Repositories
         public static void AddRepositoriesModule(this IServiceCollection services)
         {
             services.AddSingleton<IPedidoRepository, PedidoRepository>();
-            services.AddSingleton<IItemPedidoRepository, ItemPedidoRepository>();
         }
     }
 }

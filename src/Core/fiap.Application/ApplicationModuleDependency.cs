@@ -8,8 +8,7 @@ namespace fiap.Application
     {
         public static void AddApplicationModule(this IServiceCollection services)
         {
-            services.AddSingleton<IPedidoApplication, PedidoApplication>();
-            services.AddSingleton<IPagamentoApplication, PagamentoApplication>();
+            services.AddTransient<IPedidoApplication, PedidoApplication>();
         }
     }
 }
