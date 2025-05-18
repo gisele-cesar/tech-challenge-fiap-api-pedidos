@@ -3,6 +3,7 @@ using fiap.Application.Interfaces;
 using fiap.Application.UseCases;
 using fiap.Domain.Entities;
 using fiap.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,25 @@ namespace fiap.Tests.Application
 
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task ObterPedido_DeveLancarExcecao_QuandoRepositorioFalha()
+        {
+            // Configurando o mock do repositório para lançar uma exceção
+            var mockRepositorio = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+            mockRepositorio.Setup(r => r.ObterPedido(It.IsAny<int>()))
+                .ThrowsAsync(new Exception("Erro ao buscar pedido"));
+
+            var service = new PedidoApplication(_logger.Object, mockRepositorio.Object);
+
+            // Verificando se a exceção é lançada corretamente
+            var ex = await Assert.ThrowsAsync<Exception>(() => service.ObterPedido(123));
+
+            Assert.Equal("Erro ao buscar pedido", ex.Message);
+        }
+    
+
         [Fact]
         public async Task Obter_OkAsync()
         {
@@ -65,6 +85,25 @@ namespace fiap.Tests.Application
             Assert.NotNull(result);
         }
         [Fact]
+        public async Task Obter_Exception()
+        {
+            // Configurando o mock do repositório para lançar uma exceção
+            var _repo = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+            _repo.Setup(r => r.ObterPedidos())
+                .ThrowsAsync(new Exception("Erro ao buscar pedidos"));
+
+          
+            PedidoApplication app = new(_logger.Object, _repo.Object);
+
+            // Verificando se a exceção é lançada corretamente
+            var ex = await Assert.ThrowsAsync<Exception>(() => app.ObterPedidos());
+
+            Assert.Equal("Erro ao buscar pedidos", ex.Message);
+        }
+
+
+        [Fact]
         public async Task ObterPedidosPorStatus_OkAsync()
         {
             var _repo = new Mock<IPedidoRepository>();
@@ -77,6 +116,21 @@ namespace fiap.Tests.Application
             var result = await app.ObterPedidosPorStatus("1", "2", "3");
 
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task ObterPedidosPorStatus_Exception()
+        {
+            var _repo = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+
+            _repo.SetupSequence(x => x.ObterPedidosPorStatus("1", "2", "3"))
+                .ThrowsAsync(new Exception("Erro ao buscar pedidos"));
+
+            PedidoApplication app = new(_logger.Object, _repo.Object);
+            var ex = await Assert.ThrowsAsync<Exception>(() => app.ObterPedidosPorStatus("1", "2", "3"));
+
+            Assert.Equal("Erro ao buscar pedidos", ex.Message);
         }
         [Fact]
         public async Task Inserir_OkAsync()
@@ -93,6 +147,21 @@ namespace fiap.Tests.Application
             Assert.NotNull(result);
         }
         [Fact]
+        public async Task Inserir_Exception()
+        {
+            var _repo = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+
+            _repo.SetupSequence(x => x.Inserir(pedido))
+                 .ThrowsAsync(new Exception("Erro ao Inserir"));
+
+            PedidoApplication app = new(_logger.Object, _repo.Object);
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => app.Inserir(pedido));
+
+            Assert.Equal("Erro ao Inserir", ex.Message);
+        }
+        [Fact]
         public async Task Atualizar_OkAsync()
         {
             var _repo = new Mock<IPedidoRepository>();
@@ -106,6 +175,19 @@ namespace fiap.Tests.Application
 
             Assert.True(result);
         }
-       
+        [Fact]
+        public async Task Atualizar_Exception()
+        {
+            var _repo = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+
+            _repo.SetupSequence(x => x.Atualizar(pedido))
+                 .ThrowsAsync(new Exception("Erro ao Atualizar"));
+
+            PedidoApplication app = new(_logger.Object, _repo.Object);
+            var ex = await Assert.ThrowsAsync<Exception>(() => app.Atualizar(pedido));
+
+            Assert.Equal("Erro ao Atualizar", ex.Message);
+        }
     }
 }

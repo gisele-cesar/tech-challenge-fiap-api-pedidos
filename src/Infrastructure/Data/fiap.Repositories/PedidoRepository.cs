@@ -145,7 +145,8 @@ namespace fiap.Repositories
                             Numero = item["NumeroPedido"].S,
                             StatusPedido = Enum.Parse<StatusPedido>(item["StatusPedido"].S),
                             StatusPagamento = Enum.Parse<StatusPagamento>(item["StatusPagamento"].S),
-                            Produtos = produtos
+                            Produtos = produtos,
+                            DataCriacao = item["DataCriacao"].S
                         });
                     }
                 }

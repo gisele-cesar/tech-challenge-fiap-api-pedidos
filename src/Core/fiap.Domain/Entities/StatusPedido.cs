@@ -12,6 +12,7 @@ namespace fiap.Domain.Entities
         Recebido = 2,
         EmPreparacao = 3,
         Pronto = 4,
-        Finalizado = 5
+        Finalizado = 5,
+        Cancelado = 6
     }
 }

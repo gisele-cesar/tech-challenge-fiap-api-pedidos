@@ -35,23 +35,44 @@ namespace fiap.Tests.Repositories
             ];
         }
         [Fact]
-        public void ObterPedidoTest()
+        public void ObterPedidosTest()
         {
             var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
             var _logger = new Mock<Serilog.ILogger>();
 
-            // Configurando o mock para simular uma resposta de GetItemAsync
-            _mockDynamoDb
-                .Setup(m => m.GetItemAsync(It.IsAny<GetItemRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new GetItemResponse
+            _mockDynamoDb.Setup(m => m.ScanAsync(It.IsAny<ScanRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ScanResponse
+            {
+                Items = new List<Dictionary<string, AttributeValue>>
                 {
-                    Item = new Dictionary<string, AttributeValue>
+                    new Dictionary<string, AttributeValue>
                     {
-                    { "id", new AttributeValue { S = "123" } },
-                    { "nome", new AttributeValue { S = "Leandro" } },
-                    { "idade", new AttributeValue { N = "30" } }
+                        { "IdPedido", new AttributeValue { S = "001" } },
+                        { "NumeroPedido", new AttributeValue { S = "12345" } },
+                        { "StatusPedido", new AttributeValue { S = "EmPreparacao" } },
+                        { "StatusPagamento", new AttributeValue { S = "Aprovado" } },
+                        { "Cliente", new AttributeValue { M = new Dictionary<string, AttributeValue>
+                            {
+                                { "IdCliente", new AttributeValue { N = "1" } },
+                                { "Nome", new AttributeValue { S = "Leandro" } },
+                                { "Email", new AttributeValue { S = "leandro@email.com" } },
+                                { "Cpf", new AttributeValue { S = "12345678900" } }
+                            }
+                        }},
+                        { "Produtos", new AttributeValue { L = new List<AttributeValue>
+                            {
+                                new AttributeValue { M = new Dictionary<string, AttributeValue>
+                                    {
+                                        { "IdProduto", new AttributeValue { N = "1" } },
+                                        { "Nome", new AttributeValue { S = "Produto A" } },
+                                        { "Preco", new AttributeValue { N = "50.25" } }
+                                    }
+                                }
+                            }
+                        }}
                     }
-                });
+                }
+            });
 
             var request = new GetItemRequest
             {
@@ -66,9 +87,25 @@ namespace fiap.Tests.Repositories
             var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
 
             //Act
-            var result = data.ObterPedido(1);
+            var result = data.ObterPedidos();
 
             Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async void ObterPedidosTest_exception()
+        {
+            var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
+            var _logger = new Mock<Serilog.ILogger>();
+
+            _mockDynamoDb.Setup(m => m.ScanAsync(It.IsAny<ScanRequest>(), It.IsAny<CancellationToken>()))
+             .ThrowsAsync(new Exception("Erro ao Obter Pedidos"));
+
+            var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => data.ObterPedidos());
+
+            Assert.Equal("Erro ao Obter Pedidos", ex.Message);
         }
 
         [Fact]
@@ -139,6 +176,83 @@ namespace fiap.Tests.Repositories
 
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task ObterPedidosPorStatus_DeveRetornarPedidosFiltrados()
+        {
+            // Configurando o mock do DynamoDB
+            var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
+            var _logger = new Mock<Serilog.ILogger>();
+            _mockDynamoDb.Setup(m => m.QueryAsync(It.IsAny<QueryRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new QueryResponse
+                {
+                    Items = new List<Dictionary<string, AttributeValue>>
+                    {
+                    new Dictionary<string, AttributeValue>
+                    {
+                        { "DataCriacao", new AttributeValue { S = DateTime.Now.ToString() } },
+                        { "IdPedido", new AttributeValue { S = "001" } },
+                        { "StatusPedido", new AttributeValue { S = "EmPreparacao" } },
+                        { "NumeroPedido", new AttributeValue { S = "12345" } },
+                        { "StatusPagamento", new AttributeValue { S ="Aprovado" } },
+                        { "Cliente", new AttributeValue { M = new Dictionary<string, AttributeValue>
+                            {
+                                { "IdCliente", new AttributeValue { N = "1" } },
+                                { "Nome", new AttributeValue { S = "Leandro" } },
+                                { "Email", new AttributeValue { S = "leandro@email.com" } },
+                                { "Cpf", new AttributeValue { S = "12345678900" } }
+                            }
+                        }},
+                        { "Produtos", new AttributeValue { L = new List<AttributeValue>
+                            {
+                                new AttributeValue { M = new Dictionary<string, AttributeValue>
+                                    {
+                                        { "IdProduto", new AttributeValue { N = "1" } },
+                                        { "Nome", new AttributeValue { S = "Produto A" } },
+                                        { "Preco", new AttributeValue { N = "50.25" } }
+                                    }
+                                }
+                            }
+                        }}
+                    },
+                    new Dictionary<string, AttributeValue>
+                    {
+                        { "DataCriacao", new AttributeValue { S = DateTime.Now.ToString() } },
+                        { "IdPedido", new AttributeValue { S = "002" } },
+                        { "StatusPedido", new AttributeValue { S = "Cancelado" } },
+                        { "NumeroPedido", new AttributeValue { S = "67890" } },
+                        { "StatusPagamento", new AttributeValue { S = "Pendente" } },
+                        { "Cliente", new AttributeValue { M = new Dictionary<string, AttributeValue>
+                            {
+                                { "IdCliente", new AttributeValue { N = "1" } },
+                                { "Nome", new AttributeValue { S = "Leandro" } },
+                                { "Email", new AttributeValue { S = "leandro@email.com" } },
+                                { "Cpf", new AttributeValue { S = "12345678900" } }
+                            }
+                        }},
+                        { "Produtos", new AttributeValue { L = new List<AttributeValue>
+                            {
+                                new AttributeValue { M = new Dictionary<string, AttributeValue>
+                                    {
+                                        { "IdProduto", new AttributeValue { N = "1" } },
+                                        { "Nome", new AttributeValue { S = "Produto A" } },
+                                        { "Preco", new AttributeValue { N = "50.25" } }
+                                    }
+                                }
+                            }
+                        }}
+                    }
+                    }
+                });
+
+            var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
+            var pedidos = await data.ObterPedidosPorStatus("EmPreparacao", "Pronto", "Finalizado");
+
+            // Verificações
+            Assert.NotNull(pedidos);
+
+        }
+
 
         [Fact]
         public void ObterPedidoPorIdPedidoTests()
