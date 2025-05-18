@@ -4,8 +4,6 @@ using fiap.Domain.Entities;
 using fiap.Domain.Interfaces;
 using Serilog;
 using System.Data;
-using System.Data.SqlClient;
-using System.Text;
 
 namespace fiap.Repositories
 {
@@ -287,101 +285,39 @@ namespace fiap.Repositories
 
         }
 
-        public Task<bool> AtualizarStatusPedido(Pedido pedido)
-        {
-            using var connection = _connectionFactory();
-            connection.Open();
-            _logger.Information("Conexão com o banco de dados realizada com sucesso!");
-            using (var transaction = connection.BeginTransaction())
-            {
-                using var command = connection.CreateCommand();
-                try
-                {
-                    StringBuilder sb = new StringBuilder();
-                    command.Transaction = transaction;
-                    sb.Append("update Pedido set IdStatusPedido = @idStatusPedido, ");
-                    sb.Append("ValorTotalPedido = @valorTotalPedido, DataAlteracao = getdate(), ");
-                    sb.Append("IdStatusPagamento = @idStatusPagamento ");
-                    sb.Append("where IdPedido = @idPedido");
-                    command.CommandText = sb.ToString();
-
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@idPedido", Value = pedido.IdPedido, SqlDbType = SqlDbType.Int });
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@idStatusPedido", Value = pedido.StatusPedido.IdStatusPedido, SqlDbType = SqlDbType.Int });
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@idStatusPagamento", Value = pedido.StatusPagamento.IdStatusPagamento, SqlDbType = SqlDbType.Int });
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@valorTotalPedido", Value = pedido.ValorTotal, SqlDbType = SqlDbType.Decimal });
-
-                    command.ExecuteNonQuery();
-
-                    transaction.Commit();
-                    _logger.Information($"Status pedido id: {pedido.IdPedido} atualizado com sucesso!");
-                    return Task.FromResult(command.ExecuteNonQuery() >= 1);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Erro ao atualizar pedido id: {pedido.IdPedido}. Erro: {ex.Message}");
-                    transaction.Rollback();
-                    throw;
-                }
-            }
-        }
         public Task<bool> Atualizar(Pedido pedido)
         {
-            using var connection = _connectionFactory();
-            connection.Open();
-            _logger.Information("Conexão com o banco de dados realizada com sucesso!");
-            using (var transaction = connection.BeginTransaction())
+            try
             {
-                using var command = connection.CreateCommand();
-                using var commandDeletar = command;
-                using var command2 = command;
-                try
+                string tableName = "fiap-pedido";
+
+                var request = new UpdateItemRequest
                 {
-                    StringBuilder sb = new StringBuilder();
-                    command.Transaction = transaction;
-                    sb.Append("update Pedido set IdStatusPedido = @idStatusPedido, ");
-                    sb.Append("ValorTotalPedido = @valorTotalPedido, DataAlteracao = getdate(), ");
-                    sb.Append("IdStatusPagamento = @idStatusPagamento ");
-                    sb.Append("where IdPedido = @idPedido");
-                    command.CommandText = sb.ToString();
-
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@idPedido", Value = pedido.IdPedido, SqlDbType = SqlDbType.Int });
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@idStatusPedido", Value = pedido.StatusPedido.IdStatusPedido, SqlDbType = SqlDbType.Int });
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@idStatusPagamento", Value = pedido.StatusPagamento.IdStatusPagamento, SqlDbType = SqlDbType.Int });
-                    command.Parameters.Add(new SqlParameter { ParameterName = "@valorTotalPedido", Value = pedido.ValorTotal, SqlDbType = SqlDbType.Decimal });
-
-                    command.ExecuteNonQuery();
-
-
-                    commandDeletar.Transaction = transaction;
-                    commandDeletar.CommandText = "delete ItemPedido where idPedido = @idPedido";
-
-                    commandDeletar.Parameters.Add(new SqlParameter { ParameterName = "@idPedido", Value = pedido.IdPedido, SqlDbType = SqlDbType.Int });
-
-                    commandDeletar.ExecuteNonQuery();
-
-                    foreach (var item in pedido.Produtos)
+                    TableName = tableName,
+                    Key = new Dictionary<string, AttributeValue>
                     {
-
-                        command2.Transaction = transaction;
-                        command2.CommandText = "insert ItemPedido values(@idPedido, @idProduto)";
-
-                        command2.Parameters.Add(new SqlParameter { ParameterName = "@idPedido", Value = pedido.IdPedido, SqlDbType = SqlDbType.Int });
-                        command2.Parameters.Add(new SqlParameter { ParameterName = "@idProduto", Value = item.IdProduto, SqlDbType = SqlDbType.Int });
-
-                        command2.ExecuteNonQuery();
+                        { "idPedido", new AttributeValue { S = pedido.IdPedido } }
+                    },
+                    AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
+                    {
+                        { "StatusPedido", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue { S = pedido.StatusPedido.ToString() } } },
+                        { "StatusPagamento", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { S = pedido.StatusPagamento.ToString() } } },
+                        { "ValorTotal", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { N = pedido.ValorTotal.ToString() } } },
+                        { "DataAlteracao", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue {  S = DateTime.UtcNow.ToString("o") } } }
                     }
-                    transaction.Commit();
-                    _logger.Information($"Pedido id: {pedido.IdPedido} atualizado com sucesso!");
-                    return Task.FromResult(command.ExecuteNonQuery() >= 1);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Erro ao atualizar pedido id: {pedido.IdPedido}. Erro: {ex.Message}");
-                    transaction.Rollback();
-                    throw;
-                }
+                };
+
+                _amazonDynamoDb.UpdateItemAsync(request).Wait();
+
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Erro ao atualizar pedido id: {pedido.IdPedido}. Erro: {ex.Message}");
+                throw;
             }
         }
     }
-
 }
+
+

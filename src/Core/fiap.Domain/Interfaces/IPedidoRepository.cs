@@ -11,6 +11,5 @@ namespace fiap.Domain.Interfaces
         Task<Pedido> ObterPedido(int idPedido);
         Task<Pedido> Inserir(Pedido pedido);
         Task<bool> Atualizar(Pedido pedido);
-        Task<bool> AtualizarStatusPedido(Pedido pedido);
     }
 }
