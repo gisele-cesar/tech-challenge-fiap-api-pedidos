@@ -281,10 +281,10 @@ namespace fiap.Repositories
                     },
                     AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
                     {
-                        { "StatusPedido", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue { S = pedido.StatusPedido.ToString() } },
-                        { "StatusPagamento", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { S = pedido.StatusPagamento.ToString() } },
-                        { "ValorTotal", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { N = pedido.ValorTotal.ToString() } },
-                        { "DataAlteracao", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue {  S = DateTime.UtcNow.ToString("o") } }
+                        { "StatusPedido", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue { S = pedido.StatusPedido.ToString() } } },
+                        { "StatusPagamento", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { S = pedido.StatusPagamento.ToString() } } },
+                        { "ValorTotal", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { N = pedido.ValorTotal.ToString() } } },
+                        { "DataAlteracao", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue {  S = DateTime.UtcNow.ToString("o") } } }
                     }
                 };
 
