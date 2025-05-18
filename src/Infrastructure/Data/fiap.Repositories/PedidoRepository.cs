@@ -56,10 +56,12 @@ namespace fiap.Repositories
                     lst.Add(new Pedido
                     {
                         IdPedido = item["IdPedido"].ToString(),
-                        Cliente = new Cliente{  Cpf = item["cliente.Cpf"].ToString(),
-                         Email = item["cliente.Email"].ToString(),
-                         Id = Convert.ToInt32(item["cliente.Id"]),
-                         Nome = item["cliente.Nome"].ToString()
+                        Cliente = new Cliente
+                        {
+                            Cpf = item["cliente.Cpf"].ToString(),
+                            Email = item["cliente.Email"].ToString(),
+                            Id = Convert.ToInt32(item["cliente.Id"]),
+                            Nome = item["cliente.Nome"].ToString()
                         },
                         Numero = item["NumeroPedido"].ToString(),
                         StatusPedido = Enum.Parse<StatusPedido>(item["StatusPedido"].S),
@@ -83,8 +85,6 @@ namespace fiap.Repositories
         {
             try
             {
-                string tableName = "fiap-pedido";
-                string gsiName = "StatusPedido-index";
                 var statusList = new[] { status1, status2, status3 };
                 var pedidos = new List<Pedido>();
 
@@ -92,8 +92,8 @@ namespace fiap.Repositories
                 {
                     var queryRequest = new QueryRequest
                     {
-                        TableName = tableName,
-                        IndexName = gsiName,
+                        TableName = FIAP_PEDIDO_DYNAMODB,
+                        IndexName = "StatusPedido-index",
                         KeyConditionExpression = "StatusPedido = :status",
                         ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                         {
@@ -164,54 +164,69 @@ namespace fiap.Repositories
                 throw;
             }
         }
+
         public async Task<Pedido> ObterPedido(int idPedido)
         {
             try
             {
-                using var connection = _connectionFactory();
-                connection.Open();
-                _logger.Information("Conexão com o banco de dados realizada com sucesso!");
-
-                using var command = connection.CreateCommand();
-                command.CommandText = @"
-                                SELECT p.*, sp.Descricao AS DescricaoStatusPedido, pg.Descricao AS DescricaoStatusPagamento 
-                                FROM Pedido p 
-                                JOIN StatusPedido sp ON p.IdStatusPedido = sp.IdStatusPedido
-                                JOIN StatusPagamento pg ON p.IdStatusPagamento = pg.IdStatusPagamento
-                                WHERE IdPedido = @id";
-                var param = command.CreateParameter();
-                param.ParameterName = "@id";
-                param.Value = idPedido;
-                command.Parameters.Add(param);
-                Pedido pedido = null;
-                using var reader = command.ExecuteReader();
-                if (reader.Read())
+                var queryRequest = new GetItemRequest
                 {
-                    pedido = new Pedido
-                    {
-                        IdPedido = idPedido,
-                        IdCliente = (int)reader["IdCliente"],
-                        Numero = reader["NumeroPedido"].ToString(),
-                        StatusPedido = new StatusPedido
-                        {
-                            IdStatusPedido = (int)reader["IdStatusPedido"],
-                            Descricao = reader["DescricaoStatusPedido"].ToString()
-                        },
-                        StatusPagamento = new StatusPagamento
-                        {
-                            IdStatusPagamento = (int)reader["IdStatusPagamento"],
-                            Descricao = reader["DescricaoStatusPagamento"].ToString()
-                        },
+                    TableName = FIAP_PEDIDO_DYNAMODB,
+                    Key = new Dictionary<string, AttributeValue>
+            {
+                { "IdPedido", new AttributeValue { S = idPedido.ToString() } }
+            }
+                };
 
-                        Produtos = await _itemPedidoRepository.ObterItemPedido(idPedido)
-                    };
-                    _logger.Information($"Pedido id: {idPedido} obtido com sucesso!");
-                    return pedido;
-                }
-                else
-                {
+                var response = await _amazonDynamoDb.GetItemAsync(queryRequest);
+
+                if (response.Item == null || response.Item.Count == 0)
                     throw new Exception($"Id pedido {idPedido} não encontrado.");
+
+                var item = response.Item;
+
+                // Map Cliente
+                var clienteMap = item.ContainsKey("Cliente") ? item["Cliente"].M : null;
+                var cliente = clienteMap != null
+                    ? new Cliente
+                    {
+                        Id = int.Parse(clienteMap["IdCliente"].N),
+                        Nome = clienteMap["Nome"].S,
+                        Email = clienteMap["Email"].S,
+                        Cpf = clienteMap["Cpf"].S
+                    }
+                    : null;
+
+                // Map Produtos (list)
+                var produtos = new List<Produto>();
+                if (item.ContainsKey("Produtos") && item["Produtos"].L != null)
+                {
+                    foreach (var prodAttr in item["Produtos"].L)
+                    {
+                        var prodMap = prodAttr.M;
+                        produtos.Add(new Produto
+                        {
+                            IdProduto = int.Parse(prodMap["IdProduto"].N),
+                            Nome = prodMap["Nome"].S,
+                            Preco = decimal.Parse(prodMap["Preco"].N)
+                        });
+                    }
                 }
+
+                var pedido = new Pedido
+                {
+                    IdPedido = item["IdPedido"].S,
+                    Cliente = cliente,
+                    Numero = item["NumeroPedido"].S,
+                    StatusPedido = Enum.Parse<StatusPedido>(item["StatusPedido"].S),
+                    StatusPagamento = Enum.Parse<StatusPagamento>(item["StatusPagamento"].S),
+                    Produtos = produtos,
+                    DataCriacao = item.ContainsKey("DataCriacao") ? item["DataCriacao"].S : null,
+                    DataAlteracao = item.ContainsKey("DataAlteracao") ? item["DataAlteracao"].S : null,
+                };
+
+                _logger.Information($"Pedido id: {idPedido} obtido com sucesso!");
+                return pedido;
             }
             catch (Exception ex)
             {
@@ -219,16 +234,15 @@ namespace fiap.Repositories
                 throw;
             }
         }
-
         public Task<Pedido> Inserir(Pedido pedido)
         {
-            string tableName = "fiap-pedido";
-
-            var request = new PutItemRequest
+            try
             {
-                TableName = tableName,
+                var queryRequest = new PutItemRequest
+                {
+                    TableName = FIAP_PEDIDO_DYNAMODB,
 
-                Item = new Dictionary<string, AttributeValue>
+                    Item = new Dictionary<string, AttributeValue>
                 {
                     { "IdPedido", new AttributeValue { S = pedido.IdPedido } },
                     { "Cliente", new AttributeValue { M = new Dictionary<string, AttributeValue>
@@ -257,11 +271,20 @@ namespace fiap.Repositories
                     { "DataCriacao", new AttributeValue { S = DateTime.UtcNow.ToString("o") } },
                     { "DataAlteracao", new AttributeValue { S = DateTime.UtcNow.ToString("o") } }
                 }
-            };
+                };
 
-            _amazonDynamoDb.PutItemAsync(request).Wait();
+                _amazonDynamoDb.PutItemAsync(queryRequest).Wait();
 
-            return Task.FromResult(pedido);
+                _logger.Information($"Pedido número {pedido.Numero} inserido com sucesso! Pedido id: {pedido.IdPedido}.");
+                return Task.FromResult(pedido);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Erro ao incluir novo pedido número {pedido.Numero}. Erro: {ex.Message}.");
+                throw;
+            }
+
         }
 
         public Task<bool> AtualizarStatusPedido(Pedido pedido)
@@ -328,7 +351,7 @@ namespace fiap.Repositories
 
                     command.ExecuteNonQuery();
 
-                    
+
                     commandDeletar.Transaction = transaction;
                     commandDeletar.CommandText = "delete ItemPedido where idPedido = @idPedido";
 
@@ -338,7 +361,7 @@ namespace fiap.Repositories
 
                     foreach (var item in pedido.Produtos)
                     {
-                        
+
                         command2.Transaction = transaction;
                         command2.CommandText = "insert ItemPedido values(@idPedido, @idProduto)";
 
