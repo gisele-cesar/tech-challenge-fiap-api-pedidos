@@ -1,0 +1,37 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: pedidos-deployment
+  labels: 
+     app: pedidos
+spec:
+  selector:
+    matchLabels:
+      app: pedidos
+      version: v01
+  template:
+    metadata:
+      labels:
+        app: pedidos
+        version: v01
+    spec:
+      serviceAccountName: pedidos-sa
+      imagePullSecrets: 
+        - name: docker-auth
+      restartPolicy: Always
+      containers:
+      - name: pedidos
+        image: DOCKER_IMAGE
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          limits:
+            memory: "200Mi"
+            cpu: "200m"
+        ports:
+        - containerPort: 80
+        env: 
+        - name: "ASPNETCORE_ENVIRONMENT"
+          value: "Development"
