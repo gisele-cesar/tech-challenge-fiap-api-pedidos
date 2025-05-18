@@ -1,4 +1,6 @@
-﻿using fiap.Domain.Entities;
+﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using fiap.Domain.Entities;
 using fiap.Domain.Interfaces;
 using fiap.Repositories;
 using Moq;
@@ -18,12 +20,10 @@ namespace fiap.Tests.Repositories
             pedido = new Pedido
             {
                 Cliente = new Cliente { Cpf = "12345678910", Email = "teste@teste.com", Id = 1, Nome = "Joao da Silva" },
-                IdPedido = 1,
+                IdPedido = Guid.NewGuid().ToString(),
                 Numero = "123456",
-                StatusPagamento = new StatusPagamento { Descricao = "xx", IdStatusPagamento = 1 }
-                  ,
-                StatusPedido = new StatusPedido { IdStatusPedido = 1, Descricao = "xx" }
-                  ,
+                StatusPagamento = StatusPagamento.Pendente,
+                StatusPedido = StatusPedido.Solicitado,
                 Produtos = [
                       new() { Preco = 1 , Nome = "teste" , IdProduto = 1, IdCategoriaProduto = 1 , Descricao = "teste" , DataCriacao = DateTime.Now , DataAlteracao = DateTime.Now },
                       new() { Preco = 2 , Nome = "teste2" , IdProduto = 2, IdCategoriaProduto = 2 , Descricao = "teste2" , DataCriacao = DateTime.Now , DataAlteracao = DateTime.Now }
@@ -37,55 +37,33 @@ namespace fiap.Tests.Repositories
         [Fact]
         public void ObterPedidoTest()
         {
-            var _clienteRepository = new Mock<IClienteRepository>();
-            var _itemPedidoRepository = new Mock<IItemPedidoRepository>();
-            var _repo = new Mock<Func<IDbConnection>>();
+            var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
             var _logger = new Mock<Serilog.ILogger>();
-            var readerMock = new Mock<IDataReader>();
 
-            _clienteRepository.SetupSequence(_=>_.Obter(It.IsAny<int>())).Returns( Task.FromResult( new Cliente { Cpf = "1234579" , Email = "ts@t.com" , Id = 1, Nome = "teste" }));
+            // Configurando o mock para simular uma resposta de GetItemAsync
+            _mockDynamoDb
+                .Setup(m => m.GetItemAsync(It.IsAny<GetItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new GetItemResponse
+                {
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                    { "id", new AttributeValue { S = "123" } },
+                    { "nome", new AttributeValue { S = "Leandro" } },
+                    { "idade", new AttributeValue { N = "30" } }
+                    }
+                });
+
+            var request = new GetItemRequest
+            {
+                TableName = "MinhaTabela",
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { "idPedido", new AttributeValue { S = "123" } }
+                }
+            };
 
 
-            var itemPedido = new List<Produto> { new() { Preco = 1, Nome = "teste", IdProduto = 1, IdCategoriaProduto = 1, Descricao = "teste", DataCriacao = DateTime.Now, DataAlteracao = DateTime.Now } };
-            _itemPedidoRepository.Setup(x => x.ObterItemPedido(It.IsAny<int>())).Returns(Task.FromResult(itemPedido));
-
-            readerMock.SetupSequence(_ => _.Read())
-                .Returns(true)
-                .Returns(false);
-
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdCliente"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["NumeroPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdStatusPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPedido"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdStatusPagamento"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPagamento"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1); 
-
-
-            var commandMock = new Mock<IDbCommand>();
-
-            commandMock.Setup(m => m.ExecuteReader()).Returns(readerMock.Object).Verifiable();
-
-            var parameterMock = new Mock<IDbDataParameter>();
-            
-            parameterMock.SetupSequence(x=>x.ParameterName).Returns("@id");
-            parameterMock.SetupSequence(x => x.Value).Returns("1");
-
-            List<DbParameter> lstParameter = new List<DbParameter>();
-
-            SqlCommand cmd = new SqlCommand();
-            lstParameter.Add(cmd.CreateParameter());
-
-            commandMock.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            var connectionMock = new Mock<IDbConnection>();
-            connectionMock.SetupSequence(m => m.CreateCommand()).Returns(commandMock.Object);
-
-            _repo.Setup(a => a.Invoke()).Returns(connectionMock.Object);
-
-            var data = new PedidoRepository(_logger.Object, _repo.Object, _clienteRepository.Object, _itemPedidoRepository.Object);
+            var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
 
             //Act
             var result = data.ObterPedido(1);
@@ -96,55 +74,65 @@ namespace fiap.Tests.Repositories
         [Fact]
         public void ObterPedidoPorStatusTest()
         {
-            var _clienteRepository = new Mock<IClienteRepository>();
-            var _itemPedidoRepository = new Mock<IItemPedidoRepository>();
-            var _repo = new Mock<Func<IDbConnection>>();
+            var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
             var _logger = new Mock<Serilog.ILogger>();
-            var readerMock = new Mock<IDataReader>();
 
-            _clienteRepository.SetupSequence(_ => _.Obter(It.IsAny<int>())).Returns(Task.FromResult(new Cliente { Cpf = "1234579", Email = "ts@t.com", Id = 1, Nome = "teste" }));
+            var request = new QueryRequest
+            {
+                TableName = "MinhaTabela",
+                KeyConditionExpression = "StatusPedido = :status",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":id", new AttributeValue { S = "123" } }
+                }
+            };
+
+            _mockDynamoDb
+           .SetupSequence(m => m.QueryAsync(request, It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new QueryResponse
+           {
+               Items = new List<Dictionary<string, AttributeValue>>
+               {
+                    new Dictionary<string, AttributeValue>
+                    {
+                        { "id", new AttributeValue { S = "123" } },
+                        { "nome", new AttributeValue { S = "Leandro" } },
+                        { "idade", new AttributeValue { N = "30" } }
+                    },
+                    new Dictionary<string, AttributeValue>
+                    {
+                        { "id", new AttributeValue { S = "124" } },
+                        { "nome", new AttributeValue { S = "Ana" } },
+                        { "idade", new AttributeValue { N = "25" } }
+                    }
+               }
+           });
+
+            _mockDynamoDb.Setup(m => m.QueryAsync(It.IsAny<QueryRequest>(), It.IsAny<CancellationToken>()))
+          .ReturnsAsync(new QueryResponse
+          {
+              Items = new List<Dictionary<string, AttributeValue>>
+              {
+                    new Dictionary<string, AttributeValue>
+                    {
+                        { "IdPedido", new AttributeValue { S = "001" } },
+                        { "StatusPedido", new AttributeValue { S = "Solicitado" } },
+                        { "NumeroPedido", new AttributeValue { S = "12345" } },
+                        { "StatusPagamento", new AttributeValue { S = "Pago" } }
+                    },
+                    new Dictionary<string, AttributeValue>
+                    {
+                        { "IdPedido", new AttributeValue { S = "002" } },
+                        { "StatusPedido", new AttributeValue { S = "Solicitado" } },
+                        { "NumeroPedido", new AttributeValue { S = "67890" } },
+                        { "StatusPagamento", new AttributeValue { S = "Pendente" } }
+                    }
+              }
+          });
 
 
-            var itemPedido = new List<Produto> { new() { Preco = 1, Nome = "teste", IdProduto = 1, IdCategoriaProduto = 1, Descricao = "teste", DataCriacao = DateTime.Now, DataAlteracao = DateTime.Now } };
-           
-            _itemPedidoRepository.Setup(x => x.ObterItemPedido(It.IsAny<int>())).Returns(Task.FromResult(itemPedido));
 
-            readerMock.SetupSequence(_ => _.Read())
-                .Returns(true);
-                ///  .Returns(false);
-
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdCliente"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["NumeroPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdStatusPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPedido"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdStatusPagamento"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPagamento"]).Returns("teste");
-
-
-            var commandMock = new Mock<IDbCommand>();
-
-            commandMock.Setup(m => m.ExecuteReader()).Returns(readerMock.Object).Verifiable();
-
-            var parameterMock = new Mock<IDbDataParameter>();
-
-            parameterMock.SetupSequence(x => x.ParameterName).Returns("@id");
-            parameterMock.SetupSequence(x => x.Value).Returns("1");
-
-            List<DbParameter> lstParameter = new List<DbParameter>();
-
-            SqlCommand cmd = new SqlCommand();
-            lstParameter.Add(cmd.CreateParameter());
-
-            commandMock.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            var connectionMock = new Mock<IDbConnection>();
-            connectionMock.SetupSequence(m => m.CreateCommand()).Returns(commandMock.Object);
-
-            _repo.Setup(a => a.Invoke()).Returns(connectionMock.Object);
-
-            var data = new PedidoRepository(_logger.Object, _repo.Object, _clienteRepository.Object, _itemPedidoRepository.Object);
+            var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
 
             //Act
             var result = data.ObterPedidosPorStatus("1","2","3");
@@ -155,55 +143,54 @@ namespace fiap.Tests.Repositories
         [Fact]
         public void ObterPedidoPorIdPedidoTests()
         {
-            var _clienteRepository = new Mock<IClienteRepository>();
-            var _itemPedidoRepository = new Mock<IItemPedidoRepository>();
-            var _repo = new Mock<Func<IDbConnection>>();
+            var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
             var _logger = new Mock<Serilog.ILogger>();
-            var readerMock = new Mock<IDataReader>();
 
-            _clienteRepository.SetupSequence(_ => _.Obter(It.IsAny<int>())).Returns(Task.FromResult(new Cliente { Cpf = "1234579", Email = "ts@t.com", Id = 1, Nome = "teste" }));
+            // Configurando o mock para simular uma resposta de GetItemAsync
+            _mockDynamoDb
+                .Setup(m => m.GetItemAsync(It.IsAny<GetItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new GetItemResponse
+                {
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                    { "id", new AttributeValue { S = "123" } },
+                    { "nome", new AttributeValue { S = "Leandro" } },
+                    { "idade", new AttributeValue { N = "30" } }
+                    }
+                });
 
+            var request = new GetItemRequest
+            {
+                TableName = "MinhaTabela",
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { "idPedido", new AttributeValue { S = "123" } }
+                }
+            };
 
-            var itemPedido = new List<Produto> { new() { Preco = 1, Nome = "teste", IdProduto = 1, IdCategoriaProduto = 1, Descricao = "teste", DataCriacao = DateTime.Now, DataAlteracao = DateTime.Now } };
+            _mockDynamoDb.Setup(m => m.QueryAsync(It.IsAny<QueryRequest>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new QueryResponse
+                    {
+                      Items = new List<Dictionary<string, AttributeValue>>
+                      {
+                                        new Dictionary<string, AttributeValue>
+                                        {
+                                            { "IdPedido", new AttributeValue { S = "001" } },
+                                            { "StatusPedido", new AttributeValue { S = "Solicitado" } },
+                                            { "NumeroPedido", new AttributeValue { S = "12345" } },
+                                            { "StatusPagamento", new AttributeValue { S = "Pago" } }
+                                        },
+                                        new Dictionary<string, AttributeValue>
+                                        {
+                                            { "IdPedido", new AttributeValue { S = "002" } },
+                                            { "StatusPedido", new AttributeValue { S = "Solicitado" } },
+                                            { "NumeroPedido", new AttributeValue { S = "67890" } },
+                                            { "StatusPagamento", new AttributeValue { S = "Pendente" } }
+                                        }
+                      }
+                    });
 
-            _itemPedidoRepository.Setup(x => x.ObterItemPedido(It.IsAny<int>())).Returns(Task.FromResult(itemPedido));
-
-            readerMock.SetupSequence(_ => _.Read())
-                .Returns(true);
-            ///  .Returns(false);
-
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdCliente"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["NumeroPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdStatusPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPedido"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdStatusPagamento"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPagamento"]).Returns("teste");
-
-
-            var commandMock = new Mock<IDbCommand>();
-
-            commandMock.Setup(m => m.ExecuteReader()).Returns(readerMock.Object).Verifiable();
-
-            var parameterMock = new Mock<IDbDataParameter>();
-
-            parameterMock.SetupSequence(x => x.ParameterName).Returns("@id");
-            parameterMock.SetupSequence(x => x.Value).Returns("1");
-
-            List<DbParameter> lstParameter = new List<DbParameter>();
-
-            SqlCommand cmd = new SqlCommand();
-            lstParameter.Add(cmd.CreateParameter());
-
-            commandMock.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            var connectionMock = new Mock<IDbConnection>();
-            connectionMock.SetupSequence(m => m.CreateCommand()).Returns(commandMock.Object);
-
-            _repo.Setup(a => a.Invoke()).Returns(connectionMock.Object);
-
-            var data = new PedidoRepository(_logger.Object, _repo.Object, _clienteRepository.Object, _itemPedidoRepository.Object);
+            var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
 
             //Act
             var result = data.ObterPedido(1);
@@ -212,231 +199,97 @@ namespace fiap.Tests.Repositories
         }
 
         [Fact]
-        public void Inserir_Tests()
+        public async Task Inserir_DeveRetornarPedidoInserido()
         {
-            var _clienteRepository = new Mock<IClienteRepository>();
-            var _itemPedidoRepository = new Mock<IItemPedidoRepository>();
-            var _repo = new Mock<Func<IDbConnection>>();
+            // Configurando o mock do DynamoDB
+            var mockDynamoDb = new Mock<IAmazonDynamoDB>();
             var _logger = new Mock<Serilog.ILogger>();
-            var readerMock = new Mock<IDataReader>();
+            mockDynamoDb.Setup(m => m.PutItemAsync(It.IsAny<PutItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PutItemResponse());
 
-            _clienteRepository.SetupSequence(_ => _.Obter(It.IsAny<int>())).Returns(Task.FromResult(new Cliente { Cpf = "1234579", Email = "ts@t.com", Id = 1, Nome = "teste" }));
+            var pedido = new Pedido
+            {
+                IdPedido = "001",
+                Cliente = new Cliente { Id = 1, Nome = "Leandro :)", Email = "munarim@email.com", Cpf = "12345678900" },
+                Numero = "12345",
+                StatusPedido = StatusPedido.EmPreparacao,
+                StatusPagamento = StatusPagamento.Aprovado,
+                Produtos = new List<Produto>
+            {
+                new Produto { IdProduto = 1, Nome = "Produto A", Preco = 50.25m },
+                 new Produto { IdProduto = 2, Nome = "Produto B", Preco = 50.25m }
+            }
+            };
 
+            var service = new PedidoRepository(_logger.Object, mockDynamoDb.Object);
+            var resultado = await service.Inserir(pedido);
 
-            var itemPedido = new List<Produto> { new() { Preco = 1, Nome = "teste", IdProduto = 1, IdCategoriaProduto = 1, Descricao = "teste", DataCriacao = DateTime.Now, DataAlteracao = DateTime.Now } };
+            // Verificações
+            Assert.NotNull(resultado);
+            Assert.Equal("001", resultado.IdPedido);
+            Assert.Equal("Leandro :)", resultado.Cliente.Nome);
+            Assert.Equal("12345", resultado.Numero);
+            Assert.Equal(StatusPedido.EmPreparacao, resultado.StatusPedido);
+            Assert.Equal(StatusPagamento.Aprovado, resultado.StatusPagamento);
+            Assert.Equal(100.50m, resultado.ValorTotal);
 
-            _itemPedidoRepository.Setup(x => x.ObterItemPedido(It.IsAny<int>())).Returns(Task.FromResult(itemPedido));
-
-            readerMock.SetupSequence(_ => _.Read())
-                .Returns(true);
-            ///  .Returns(false);
-
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdCliente"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["NumeroPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdStatusPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPedido"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdStatusPagamento"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPagamento"]).Returns("teste");
-
-
-            var commandMock = new Mock<IDbCommand>();
-            var commandMock2 = new Mock<IDbCommand>();
-
-            commandMock.Setup(m => m.ExecuteScalar()).Returns(1).Verifiable();
-            commandMock2.Setup(m => m.ExecuteScalar()).Returns(1).Verifiable();
-
-            commandMock.Setup(m => m.ExecuteNonQuery()).Returns(1).Verifiable();
-            commandMock2.Setup(m => m.ExecuteNonQuery()).Returns(1).Verifiable();
-
-            var parameterMock = new Mock<IDbDataParameter>();
-
-            parameterMock.SetupSequence(x => x.ParameterName).Returns("@id");
-            parameterMock.SetupSequence(x => x.Value).Returns("1");
-
-            List<DbParameter> lstParameter = new List<DbParameter>();
-
-            SqlCommand cmd = new SqlCommand();
-            lstParameter.Add(cmd.CreateParameter());
-
-            commandMock.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            commandMock2.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock2.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            var connectionMock = new Mock<IDbConnection>();
-            var connectionMock2 = new Mock<IDbConnection>();
-            var transactionMock = new Mock<IDbTransaction>();
-
-            //// transactionMock.Setup(x=>x.co)
-
-            connectionMock.SetupSequence(m => m.CreateCommand()).Returns(commandMock.Object);
-            connectionMock2.SetupSequence(m => m.CreateCommand()).Returns(commandMock2.Object);
-            connectionMock.SetupSequence(m => m.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
-            connectionMock2.SetupSequence(m => m.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
-
-            _repo.SetupSequence(a => a.Invoke()).Returns(connectionMock.Object);
-            _repo.SetupSequence(a => a.Invoke()).Returns(connectionMock2.Object);
-
-            var data = new PedidoRepository(_logger.Object, _repo.Object, _clienteRepository.Object, _itemPedidoRepository.Object);
-
-            //Act
-            var result = data.Inserir(pedido);
-
-            Assert.NotNull(result);
+            mockDynamoDb.Verify(m => m.PutItemAsync(It.IsAny<PutItemRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        [Fact]
-        public void AtualizarStatusPedido_Tests()
-        {
-            var _clienteRepository = new Mock<IClienteRepository>();
-            var _itemPedidoRepository = new Mock<IItemPedidoRepository>();
-            var _repo = new Mock<Func<IDbConnection>>();
-            var _logger = new Mock<Serilog.ILogger>();
-            var readerMock = new Mock<IDataReader>();
-
-            _clienteRepository.SetupSequence(_ => _.Obter(It.IsAny<int>())).Returns(Task.FromResult(new Cliente { Cpf = "1234579", Email = "ts@t.com", Id = 1, Nome = "teste" }));
-
-
-            var itemPedido = new List<Produto> { new() { Preco = 1, Nome = "teste", IdProduto = 1, IdCategoriaProduto = 1, Descricao = "teste", DataCriacao = DateTime.Now, DataAlteracao = DateTime.Now } };
-
-            _itemPedidoRepository.Setup(x => x.ObterItemPedido(It.IsAny<int>())).Returns(Task.FromResult(itemPedido));
-
-            readerMock.SetupSequence(_ => _.Read())
-                .Returns(true);
-            ///  .Returns(false);
-
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdCliente"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["NumeroPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdStatusPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPedido"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdStatusPagamento"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPagamento"]).Returns("teste");
-
-
-            var commandMock = new Mock<IDbCommand>();
-            var commandMock2 = new Mock<IDbCommand>();
-
-            commandMock.Setup(m => m.ExecuteScalar()).Returns(1).Verifiable();
-            commandMock2.Setup(m => m.ExecuteScalar()).Returns(1).Verifiable();
-
-            commandMock.Setup(m => m.ExecuteNonQuery()).Returns(1).Verifiable();
-            commandMock2.Setup(m => m.ExecuteNonQuery()).Returns(1).Verifiable();
-
-            var parameterMock = new Mock<IDbDataParameter>();
-
-            parameterMock.SetupSequence(x => x.ParameterName).Returns("@id");
-            parameterMock.SetupSequence(x => x.Value).Returns("1");
-
-            List<DbParameter> lstParameter = new List<DbParameter>();
-
-            SqlCommand cmd = new SqlCommand();
-            lstParameter.Add(cmd.CreateParameter());
-
-            commandMock.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            commandMock2.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock2.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            var connectionMock = new Mock<IDbConnection>();
-            var connectionMock2 = new Mock<IDbConnection>();
-            var transactionMock = new Mock<IDbTransaction>();
-
-            //// transactionMock.Setup(x=>x.co)
-
-            connectionMock.SetupSequence(m => m.CreateCommand()).Returns(commandMock.Object);
-            connectionMock2.SetupSequence(m => m.CreateCommand()).Returns(commandMock2.Object);
-            connectionMock.SetupSequence(m => m.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
-            connectionMock2.SetupSequence(m => m.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
-
-            _repo.SetupSequence(a => a.Invoke()).Returns(connectionMock.Object);
-            _repo.SetupSequence(a => a.Invoke()).Returns(connectionMock2.Object);
-
-            var data = new PedidoRepository(_logger.Object, _repo.Object, _clienteRepository.Object, _itemPedidoRepository.Object);
-
-            //Act
-            var result = data.AtualizarStatusPedido(pedido);
-
-            Assert.NotNull(result);
-        }
 
         [Fact]
         public void Atualizar_Tests()
         {
-            var _clienteRepository = new Mock<IClienteRepository>();
-            var _itemPedidoRepository = new Mock<IItemPedidoRepository>();
-            var _repo = new Mock<Func<IDbConnection>>();
+            var _mockDynamoDb = new Mock<IAmazonDynamoDB>();
             var _logger = new Mock<Serilog.ILogger>();
-            var readerMock = new Mock<IDataReader>();
-
-            _clienteRepository.SetupSequence(_ => _.Obter(It.IsAny<int>())).Returns(Task.FromResult(new Cliente { Cpf = "1234579", Email = "ts@t.com", Id = 1, Nome = "teste" }));
 
 
-            var itemPedido = new List<Produto> { new() { Preco = 1, Nome = "teste", IdProduto = 1, IdCategoriaProduto = 1, Descricao = "teste", DataCriacao = DateTime.Now, DataAlteracao = DateTime.Now } };
+            // Configurando o mock para simular uma resposta de PutItemAsync
+            _mockDynamoDb
+                .Setup(m => m.PutItemAsync(It.IsAny<PutItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PutItemResponse());
 
-            _itemPedidoRepository.Setup(x => x.ObterItemPedido(It.IsAny<int>())).Returns(Task.FromResult(itemPedido));
-
-            readerMock.SetupSequence(_ => _.Read())
-                .Returns(true);
-            ///  .Returns(false);
-
-            readerMock.SetupSequence(reader => reader["IdPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdCliente"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["NumeroPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["IdStatusPedido"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPedido"]).Returns("teste");
-            readerMock.SetupSequence(reader => reader["IdStatusPagamento"]).Returns(1);
-            readerMock.SetupSequence(reader => reader["DescricaoStatusPagamento"]).Returns("teste");
+            var request = new PutItemRequest
+            {
+                TableName = "MinhaTabela",
+                Item = new Dictionary<string, AttributeValue>
+            {
+                { "id", new AttributeValue { S = "123" } },
+                { "nome", new AttributeValue { S = "Leandro" } }
+            }
+            };
 
 
-            var commandMock = new Mock<IDbCommand>();
-            var commandMock2 = new Mock<IDbCommand>();
-
-            commandMock.Setup(m => m.ExecuteScalar()).Returns(1).Verifiable();
-            commandMock2.Setup(m => m.ExecuteScalar()).Returns(1).Verifiable();
-
-            commandMock.Setup(m => m.ExecuteNonQuery()).Returns(1).Verifiable();
-            commandMock2.Setup(m => m.ExecuteNonQuery()).Returns(1).Verifiable();
-
-            var parameterMock = new Mock<IDbDataParameter>();
-
-            parameterMock.SetupSequence(x => x.ParameterName).Returns("@id");
-            parameterMock.SetupSequence(x => x.Value).Returns("1");
-
-            List<DbParameter> lstParameter = new List<DbParameter>();
-
-            SqlCommand cmd = new SqlCommand();
-            lstParameter.Add(cmd.CreateParameter());
-
-            commandMock.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            commandMock2.Setup(m => m.CreateParameter()).Returns(lstParameter[0]);
-            commandMock2.Setup(m => m.Parameters.Add(cmd.CreateParameter()));
-
-            var connectionMock = new Mock<IDbConnection>();
-            var connectionMock2 = new Mock<IDbConnection>();
-            var transactionMock = new Mock<IDbTransaction>();
-
-            //// transactionMock.Setup(x=>x.co)
-
-            connectionMock.SetupSequence(m => m.CreateCommand()).Returns(commandMock.Object);
-            connectionMock2.SetupSequence(m => m.CreateCommand()).Returns(commandMock2.Object);
-            connectionMock.SetupSequence(m => m.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
-            connectionMock2.SetupSequence(m => m.BeginTransaction()).Returns(Mock.Of<IDbTransaction>());
-
-            _repo.SetupSequence(a => a.Invoke()).Returns(connectionMock.Object);
-            _repo.SetupSequence(a => a.Invoke()).Returns(connectionMock2.Object);
-
-            var data = new PedidoRepository(_logger.Object, _repo.Object, _clienteRepository.Object, _itemPedidoRepository.Object);
-
+            var data = new PedidoRepository(_logger.Object, _mockDynamoDb.Object);
             //Act
             var result = data.Atualizar(pedido);
 
             Assert.NotNull(result);
         }
+
+        [Fact]
+        public async Task Atualizar_DeveRetornarTrue()
+        {
+            // Configurando o mock do DynamoDB
+            var mockDynamoDb = new Mock<IAmazonDynamoDB>();
+            var _logger = new Mock<Serilog.ILogger>();
+            mockDynamoDb.Setup(m => m.UpdateItemAsync(It.IsAny<UpdateItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new UpdateItemResponse());
+
+            var pedido = new Pedido
+            {
+                IdPedido = "001",
+                StatusPedido = StatusPedido.EmPreparacao,
+                StatusPagamento = StatusPagamento.Aprovado
+            };
+
+            var service = new PedidoRepository(_logger.Object, mockDynamoDb.Object);
+            var resultado = await service.Atualizar(pedido);
+
+            // Verificações
+            Assert.True(resultado);
+            mockDynamoDb.Verify(m => m.UpdateItemAsync(It.IsAny<UpdateItemRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
     }
 }

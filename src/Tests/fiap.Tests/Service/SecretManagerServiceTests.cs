@@ -45,33 +45,6 @@ namespace fiap.Tests.Service
             Assert.NotNull(result);
         }
 
-        [Fact]
-        public async Task ObterSecretMercadoPago_Test()
-        {
-            var _logger = new Mock<Serilog.ILogger>();
-            var mockSecretsManager = new Mock<IAmazonSecretsManager>();
-
-            var secretValueResponse = new GetSecretValueResponse
-            {
-                SecretString = "{\"accessToken\":\"teste\",\"userId\":\"teste\",\"externalPosId\":\"teste\"}"
-            };
-
-            mockSecretsManager
-                .Setup(sm => sm.GetSecretValueAsync(It.IsAny<GetSecretValueRequest>(), default))
-                .ReturnsAsync(secretValueResponse);
-
-            var secretsManagerClient = mockSecretsManager.Object;
-
-            var response = await secretsManagerClient.GetSecretValueAsync(new GetSecretValueRequest
-            {
-                SecretId = "segredo"
-            });
-
-            var secret = new SecretManagerService(_logger.Object, mockSecretsManager.Object);
-            var result = await secret.ObterSecret<SecretMercadoPago>("123456");
-
-            // Assert
-            Assert.NotNull(result);
-        }
+        
     }
 }

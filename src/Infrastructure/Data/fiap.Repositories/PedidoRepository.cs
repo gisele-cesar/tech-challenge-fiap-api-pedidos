@@ -13,7 +13,7 @@ namespace fiap.Repositories
         private readonly IAmazonDynamoDB _amazonDynamoDb;
         private const string FIAP_PEDIDO_DYNAMODB = "fiap-pedido";
 
-        public PedidoRepository(ILogger logger, Func<IDbConnection> connectionFactory, IAmazonDynamoDB amazonDynamoDb)
+        public PedidoRepository(ILogger logger, IAmazonDynamoDB amazonDynamoDb)
         {
             _logger = logger;
             _amazonDynamoDb = amazonDynamoDb;
@@ -167,9 +167,9 @@ namespace fiap.Repositories
                 {
                     TableName = FIAP_PEDIDO_DYNAMODB,
                     Key = new Dictionary<string, AttributeValue>
-            {
-                { "IdPedido", new AttributeValue { S = idPedido.ToString() } }
-            }
+                    {
+                        { "IdPedido", new AttributeValue { S = idPedido.ToString() } }
+                    }
                 };
 
                 var response = await _amazonDynamoDb.GetItemAsync(queryRequest);

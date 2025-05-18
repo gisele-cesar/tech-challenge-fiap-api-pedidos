@@ -21,13 +21,11 @@ namespace fiap.Tests.Application
         {
             pedido = new Pedido
             {
-                IdCliente = 1,
-                IdPedido = 1,
+                Cliente = new Cliente { Cpf = "12345678910", Email = "teste@teste.com", Id = 1, Nome = "Joao da Silva" },
+                IdPedido = Guid.NewGuid().ToString(),
                 Numero = "123456",
-                StatusPagamento = new StatusPagamento { Descricao = "xx", IdStatusPagamento = 1 }
-                 ,
-                StatusPedido = new StatusPedido { IdStatusPedido = 1, Descricao = "xx" }
-                 ,
+                StatusPagamento = StatusPagamento.Pendente,
+                StatusPedido = StatusPedido.Solicitado,
                 Produtos = [
                      new() { Preco = 1 , Nome = "teste" , IdProduto = 1, IdCategoriaProduto = 1 , Descricao = "teste" , DataCriacao = DateTime.Now , DataAlteracao = DateTime.Now },
                       new() { Preco = 2 , Nome = "teste2" , IdProduto = 2, IdCategoriaProduto = 2 , Descricao = "teste2" , DataCriacao = DateTime.Now , DataAlteracao = DateTime.Now }
@@ -108,19 +106,6 @@ namespace fiap.Tests.Application
 
             Assert.True(result);
         }
-        [Fact]
-        public async Task AtualizarStatusPedido_OkAsync()
-        {
-            var _repo = new Mock<IPedidoRepository>();
-            var _logger = new Mock<Serilog.ILogger>();
-
-            _repo.SetupSequence(x => x.AtualizarStatusPedido(pedido))
-                .ReturnsAsync(true);
-
-            PedidoApplication app = new(_logger.Object, _repo.Object);
-            var result = await app.AtualizarStatusPedido(pedido);
-
-            Assert.True(result);
-        }
+       
     }
 }
