@@ -2,7 +2,7 @@ name: Deploy to ECR
 
 on:
    push:
-     branches: [ feature/api-pedidos ]
+     branches: [ develop ]
    pull_request:
      types: [opened, synchronize, reopened]
 
@@ -62,7 +62,7 @@ jobs:
         dotnet test src/Tests/fiap.Tests/fiap.Tests.csproj --collect "Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:ExcludeByFile=\"**/Microsoft.NET.Test.Sdk.Program.cs\"
         dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-    - name: Rodando testes unitários e criando relatório
+    - name: Rodando testes unitï¿½rios e criando relatï¿½rio
       run: dotnet test src/Tests/fiap.Tests/fiap.Tests.csproj /p:CollectCoverage=true /p:IncludeTestAssembly=true /p:CoverletOutputFormat=opencover /p:ExcludeByFile=\"**/Microsoft.NET.Test.Sdk.Program.cs\"
         
     - name: Upload coverage reports to Codecov

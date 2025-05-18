@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: fiap-fase-3-service
+  name: pedidos-service
   labels:
-    app: fiap-fase-3
+    app: pedidos
 spec:
   selector:
-    app: fiap-fase-3 
+    app: pedidos
   ports:
   - name: http
     port: 80
-    targetPort: 8080
+    targetPort: 80
   - name: https
     port: 443
-    targetPort: 8080
+    targetPort: 80
   type: LoadBalancer

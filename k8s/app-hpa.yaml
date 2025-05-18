@@ -1,14 +1,15 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: fiap-fase-3-hpa
+  name: pedidos-hpa
   labels: 
-     app: fiap-fase-3
+     app: pedidos
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: fiap-fase-3
+    name: pedidos-deployment
+  # Compare this snippet from k8s/app-deployment.yaml:
   minReplicas: 1
   maxReplicas: 10
   metrics:
