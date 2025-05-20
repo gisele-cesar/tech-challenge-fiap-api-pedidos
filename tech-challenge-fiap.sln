@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k8s", "k8s", "{2336E2F1-353B-44A2-847A-3480A13EC6BB}"
 	ProjectSection(SolutionItems) = preProject
 		k8s\app-deployment.yaml = k8s\app-deployment.yaml
+		k8s\app-hpa.yaml = k8s\app-hpa.yaml
 		k8s\app-service-account.yaml = k8s\app-service-account.yaml
 		k8s\app-service.yaml = k8s\app-service.yaml
 	EndProjectSection
@@ -46,7 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{4C714684-4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{39B1467A-72E6-48FF-BDA2-72561B739D6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fiap.Tests", "src\Tests\fiap.Tests\fiap.Tests.csproj", "{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fiap.Tests", "src\Tests\fiap.Tests\fiap.Tests.csproj", "{6A11BFC1-80CB-4CE4-9545-9A190A7C9530}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
