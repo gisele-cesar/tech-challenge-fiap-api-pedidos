@@ -36,31 +36,6 @@ builder.Services.AddHttpClient();
 builder.Services.AddApplicationModule();
 builder.Services.AddServicesModule();
 
-//builder.Services.AddSingleton<Func<IDbConnection>>(sp =>
-//{
-//    var configuration = sp.GetRequiredService<IConfiguration>();
-//    var connectionString = configuration.GetConnectionString("fiap.sqlServer");
-//    var secretService = sp.GetRequiredService<ISecretManagerService>();
-
-//    var secret = secretService.ObterSecret<SecretDbConnect>("dev/fiap/sql-rds").Result;
-
-//    if (secret.Host is null)
-//    {
-//        Console.WriteLine("Não foi possível recuperar a secret - Console.WriteLine"); ;
-//        Log.Information("Não foi possível recuperar a secret Serilog");
-//        throw new Exception("Não foi possível recuperar a secret - Lançada excecao");
-//    }
-
-//    connectionString = connectionString
-//    .Replace("__server__", secret.Host)
-//    .Replace("__port__", secret.Port)
-//    .Replace("__db__", secret.DbInstanceIdentifier)
-//    .Replace("__userdb__", secret.UserName)
-//    .Replace("__senha__", secret.Password);
-
-//    return () => new SqlConnection(connectionString);
-//});
-
 builder.Services.AddRepositoriesModule();
 var app = builder.Build();
 
