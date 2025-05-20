@@ -57,9 +57,11 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-app.UsePathBase("api-pedidos");
+app.UsePathBase("/api-pedidos");
 app.MapControllers();
-app.Map("/", app1 => app1.Run(ctx => ctx.Response.WriteAsync($"path-Base: {ctx.Request.PathBase} Path: {ctx.Request.Path}"));
+app.Map("/api-pedidos", app1 => app1
+.Run(ctx => ctx.Response
+.WriteAsync($"path-Base: {ctx.Request.PathBase} Path: {ctx.Request.Path}")));
 
 Log.Information("Iniciando aplicação");
 app.Run();
