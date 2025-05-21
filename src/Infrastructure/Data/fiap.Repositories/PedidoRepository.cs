@@ -333,7 +333,7 @@ namespace fiap.Repositories
                     TableName = tableName,
                     Key = new Dictionary<string, AttributeValue>
                     {
-                        { "idPedido", new AttributeValue { S = idPedido } }
+                        { "IdPedido", new AttributeValue { S = idPedido } }
                     },
                     AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
                     {

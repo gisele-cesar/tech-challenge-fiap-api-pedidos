@@ -267,7 +267,7 @@ namespace fiap.API.Controllers
         /// <param name="statusPagamento"></param>
         /// <returns></returns>
         [HttpPut("AtualizarStatus")]
-        public async Task<IActionResult> AtualizarStatus([FromQuery] string idPedido , string statusPedido, string statusPagamento)
+        public async Task<IActionResult> AtualizarStatus([FromQuery] string idPedido, string statusPedido, string statusPagamento)
         {
             try
             {
