@@ -2,6 +2,7 @@
 using fiap.Application.DTO;
 using fiap.Application.Interfaces;
 using fiap.Domain.Entities;
+using fiap.Domain.Interfaces;
 using Moq;
 using Xunit;
 
@@ -49,9 +50,12 @@ namespace fiap.Tests.ControllerTests
         {
             var _application = new Mock<IPedidoApplication>();
             var _logger = new Mock<Serilog.ILogger>();
+            var _pagamentoService = new Mock<IPagamentoService>();
+
+            _pagamentoService.SetupSequence(x => x.CriarOrdemPagamento(It.IsAny<Pedido>())).ReturnsAsync(true);
             _application.SetupSequence(x => x.ObterPedidos()).ReturnsAsync(lstPedido);
 
-            PedidoController controller = new(_logger.Object , _application.Object);
+            PedidoController controller = new(_logger.Object , _application.Object, _pagamentoService.Object);
             var result = await controller.Get();
 
             Assert.NotNull(result);
@@ -61,9 +65,12 @@ namespace fiap.Tests.ControllerTests
         {
             var _application = new Mock<IPedidoApplication>();
             var _logger = new Mock<Serilog.ILogger>();
+            var _pagamentoService = new Mock<IPagamentoService>();
+
+            _pagamentoService.SetupSequence(x => x.CriarOrdemPagamento(It.IsAny<Pedido>())).ReturnsAsync(true);
             _application.SetupSequence(x => x.ObterPedidosPorStatus("","","")).ReturnsAsync(lstPedido);
 
-            PedidoController controller = new(_logger.Object, _application.Object);
+            PedidoController controller = new(_logger.Object, _application.Object, _pagamentoService.Object);
             var result = await controller.Get("","","");
 
             Assert.NotNull(result);
@@ -73,9 +80,12 @@ namespace fiap.Tests.ControllerTests
         {
             var _application = new Mock<IPedidoApplication>();
             var _logger = new Mock<Serilog.ILogger>();
+            var _pagamentoService = new Mock<IPagamentoService>();
+
+            _pagamentoService.SetupSequence(x => x.CriarOrdemPagamento(It.IsAny<Pedido>())).ReturnsAsync(true);
             _application.SetupSequence(x => x.ObterPedido(1)).ReturnsAsync(pedido);
 
-            PedidoController controller = new(_logger.Object, _application.Object);
+            PedidoController controller = new(_logger.Object, _application.Object, _pagamentoService.Object);
             var result = await controller.Get(1);
 
             Assert.NotNull(result);
@@ -86,9 +96,12 @@ namespace fiap.Tests.ControllerTests
         {
             var _application = new Mock<IPedidoApplication>();
             var _logger = new Mock<Serilog.ILogger>();
+            var _pagamentoService = new Mock<IPagamentoService>();
+
+            _pagamentoService.SetupSequence(x => x.CriarOrdemPagamento(It.IsAny<Pedido>())).ReturnsAsync(true);
             _application.SetupSequence(x => x.Inserir(pedido)).ReturnsAsync(pedido);
 
-            PedidoController controller = new(_logger.Object, _application.Object);
+            PedidoController controller = new(_logger.Object, _application.Object, _pagamentoService.Object);
             var result = await controller.Post(pedidoDTO);
 
             Assert.NotNull(result);
@@ -98,9 +111,12 @@ namespace fiap.Tests.ControllerTests
         {
             var _application = new Mock<IPedidoApplication>();
             var _logger = new Mock<Serilog.ILogger>();
+            var _pagamentoService = new Mock<IPagamentoService>();
+
+            _pagamentoService.SetupSequence(x => x.CriarOrdemPagamento(It.IsAny<Pedido>())).ReturnsAsync(true);
             _application.SetupSequence(x => x.Atualizar(pedido)).ReturnsAsync(true);
 
-            PedidoController controller = new(_logger.Object, _application.Object);
+            PedidoController controller = new(_logger.Object, _application.Object, _pagamentoService.Object);
             var result = await controller.Put(pedidoDTO);
 
             Assert.NotNull(result);

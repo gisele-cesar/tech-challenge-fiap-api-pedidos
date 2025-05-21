@@ -83,5 +83,19 @@ namespace fiap.Application.UseCases
                 throw;
             }
         }
+
+        public async Task<bool> AtualizarStatus(string idPedido, string statusPedido, string statusPagamento)
+        {
+            try
+            {
+                _logger.Information($"Atualizando status pedido id: {idPedido}.");
+                return await _pedidoRepository.AtualizarStatus(idPedido, statusPedido, statusPagamento);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Erro ao atualizar pedido id {idPedido}. Erro: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
