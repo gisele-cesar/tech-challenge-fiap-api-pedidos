@@ -321,6 +321,38 @@ namespace fiap.Repositories
                 throw;
             }
         }
+
+        public Task<bool> AtualizarStatus(string idPedido, string statusPedido, string statusPagamento)
+        {
+            try
+            {
+                string tableName = "fiap-pedido";
+
+                var request = new UpdateItemRequest
+                {
+                    TableName = tableName,
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "idPedido", new AttributeValue { S = idPedido } }
+                    },
+                    AttributeUpdates = new Dictionary<string, AttributeValueUpdate>
+                    {
+                        { "StatusPedido", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue { S = statusPedido } } },
+                        { "StatusPagamento", new AttributeValueUpdate { Action = AttributeAction.PUT, Value = new AttributeValue { S = statusPagamento } } },
+                        { "DataAlteracao", new AttributeValueUpdate {Action = AttributeAction.PUT, Value = new AttributeValue {  S = DateTime.UtcNow.ToString("o") } } }
+                    }
+                };
+
+                _amazonDynamoDb.UpdateItemAsync(request).Wait();
+
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Erro ao atualizar pedido id: {idPedido}. Erro: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
 

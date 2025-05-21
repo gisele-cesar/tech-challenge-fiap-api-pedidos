@@ -258,5 +258,31 @@ namespace fiap.API.Controllers
                 throw;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="idPedido"></param>
+        /// <param name="statusPedido"></param>
+        /// <param name="statusPagamento"></param>
+        /// <returns></returns>
+        [HttpPut("AtualizarStatus")]
+        public async Task<IActionResult> AtualizarStatus([FromQuery] string idPedido , string statusPedido, string statusPagamento)
+        {
+            try
+            {
+                _logger.Information($"Atualizando status pedido id: {idPedido} - statusPedido -{statusPedido} - statusPagamento - {statusPagamento}");
+
+                if (await _pedidoApplication.AtualizarStatus(idPedido, statusPedido, statusPagamento))
+                    return Ok(new { Mensagem = "Status Pedido alterado com sucesso!" });
+
+                return BadRequest(new { Mensagem = "Erro ao alterar pedido!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao alterar pedido id {idPedido}. Erro: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
