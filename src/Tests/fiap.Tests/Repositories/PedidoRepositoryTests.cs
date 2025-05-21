@@ -79,7 +79,7 @@ namespace fiap.Tests.Repositories
                 TableName = "MinhaTabela",
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "idPedido", new AttributeValue { S = "123" } }
+                    { "IdPedido", new AttributeValue { S = "123" } }
                 }
             };
 
@@ -278,7 +278,7 @@ namespace fiap.Tests.Repositories
                 TableName = "MinhaTabela",
                 Key = new Dictionary<string, AttributeValue>
                 {
-                    { "idPedido", new AttributeValue { S = "123" } }
+                    { "IdPedido", new AttributeValue { S = "123" } }
                 }
             };
 
