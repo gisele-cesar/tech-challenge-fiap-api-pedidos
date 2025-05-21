@@ -404,6 +404,28 @@ namespace fiap.Tests.Repositories
             Assert.True(resultado);
             mockDynamoDb.Verify(m => m.UpdateItemAsync(It.IsAny<UpdateItemRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
+        [Fact]
+        public async Task AtualizarStatus_DeveRetornarTrue()
+        {
+            // Configurando o mock do DynamoDB
+            var mockDynamoDb = new Mock<IAmazonDynamoDB>();
+            var _logger = new Mock<Serilog.ILogger>();
+            mockDynamoDb.Setup(m => m.UpdateItemAsync(It.IsAny<UpdateItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new UpdateItemResponse());
 
+            var pedido = new Pedido
+            {
+                IdPedido = "001",
+                StatusPedido = StatusPedido.EmPreparacao,
+                StatusPagamento = StatusPagamento.Aprovado
+            };
+
+            var service = new PedidoRepository(_logger.Object, mockDynamoDb.Object);
+            var resultado = await service.AtualizarStatus(pedido.IdPedido, pedido.StatusPedido.ToString(),pedido.StatusPagamento.ToString());
+
+            // Verificações
+            Assert.True(resultado);
+            mockDynamoDb.Verify(m => m.UpdateItemAsync(It.IsAny<UpdateItemRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
     }
 }

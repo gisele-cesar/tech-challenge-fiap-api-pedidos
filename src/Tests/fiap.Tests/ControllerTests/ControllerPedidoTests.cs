@@ -121,5 +121,20 @@ namespace fiap.Tests.ControllerTests
 
             Assert.NotNull(result);
         }
+        [Fact]
+        public async Task AtualizarStatus_OKAsync()
+        {
+            var _application = new Mock<IPedidoApplication>();
+            var _logger = new Mock<Serilog.ILogger>();
+            var _pagamentoService = new Mock<IPagamentoService>();
+
+            _pagamentoService.SetupSequence(x => x.CriarOrdemPagamento(It.IsAny<Pedido>())).ReturnsAsync(true);
+            _application.SetupSequence(x => x.AtualizarStatus(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+
+            PedidoController controller = new(_logger.Object, _application.Object, _pagamentoService.Object);
+            var result = await controller.AtualizarStatus("","","");
+
+            Assert.NotNull(result);
+        }
     }
 }

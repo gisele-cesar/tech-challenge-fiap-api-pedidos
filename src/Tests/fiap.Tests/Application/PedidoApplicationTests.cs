@@ -189,5 +189,33 @@ namespace fiap.Tests.Application
 
             Assert.Equal("Erro ao Atualizar", ex.Message);
         }
+        [Fact]
+        public async Task AtualizarStatus_OkAsync()
+        {
+            var _repo = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+
+            _repo.SetupSequence(x => x.AtualizarStatus(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
+
+            PedidoApplication app = new(_logger.Object, _repo.Object);
+            var result = await app.AtualizarStatus("","","");
+
+            Assert.True(result);
+        }
+        [Fact]
+        public async Task AtualizarStatus_Exception()
+        {
+            var _repo = new Mock<IPedidoRepository>();
+            var _logger = new Mock<Serilog.ILogger>();
+
+            _repo.SetupSequence(x => x.AtualizarStatus(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                 .ThrowsAsync(new Exception("Erro ao Atualizar"));
+
+            PedidoApplication app = new(_logger.Object, _repo.Object);
+            var ex = await Assert.ThrowsAsync<Exception>(() => app.AtualizarStatus("", "", ""));
+
+            Assert.Equal("Erro ao Atualizar", ex.Message);
+        }
     }
 }
