@@ -1,21 +1,35 @@
 ﻿using fiap.Application.DTO;
 using fiap.Application.Interfaces;
 using fiap.Domain.Entities;
+using fiap.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
 namespace fiap.API.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class PedidoController : ControllerBase
     {
         private readonly Serilog.ILogger _logger;
         private readonly IPedidoApplication _pedidoApplication;
-        public PedidoController(Serilog.ILogger logger, IPedidoApplication pedidoApplication)
+        private readonly IPagamentoService _pagamentoService;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="pedidoApplication"></param>
+        /// <param name="pagamentoService"></param>
+        public PedidoController(Serilog.ILogger logger, 
+            IPedidoApplication pedidoApplication,
+            IPagamentoService pagamentoService)
         {
             _logger = logger;
             _pedidoApplication = pedidoApplication;
+            _pagamentoService = pagamentoService;
         }
 
         /// <summary>
@@ -155,12 +169,12 @@ namespace fiap.API.Controllers
 
                 if (pedidoInserido != null)
                 {
-                    //if (await _pagamentoApplication.CriarOrdemPagamento(pedidoInserido.IdPedido))
-                    //{
-                    //    _logger.Information($"Iniciando criacao ordem de pagamento no MP do pedido id: {pedidoInserido.IdPedido}.");
+                    if (await _pagamentoService.CriarOrdemPagamento(obj))
+                    {
+                        _logger.Information($"Iniciando criacao ordem de pagamento no MP do pedido id: {pedidoInserido.IdPedido}.");
                         return Ok(new { Mensagem = $"Pedido incluído com sucesso!", pedidoInserido.IdPedido });
-                    //}
-                    ///return BadRequest(new { Mensagem = "Erro ao criar pedido no meio de pagamento" });
+                    }
+                    return BadRequest(new { Mensagem = "Erro ao criar pedido no meio de pagamento" });
                 }
                 return BadRequest(new { Mensagem = "Erro ao incluir pedido!" });
             }
